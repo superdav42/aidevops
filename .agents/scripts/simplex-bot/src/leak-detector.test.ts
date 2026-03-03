@@ -152,6 +152,7 @@ describe("scanForLeaks — database URLs", () => {
   });
 
   test("detects MongoDB connection string", () => {
+    // Intentionally realistic fake credential — this is a leak-detector test fixture, not a real secret
     const text = "mongodb+srv://admin:secretpass@cluster0.abc123.mongodb.net/mydb";
     const result = scanForLeaks(text);
     expect(result.hasLeaks).toBe(true);
