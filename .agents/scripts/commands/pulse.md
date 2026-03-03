@@ -200,8 +200,8 @@ Issues labelled `quality-debt` (created by `quality-feedback-helper.sh scan-merg
 
 ```bash
 # Count active quality-debt workers
-QUALITY_DEBT_ACTIVE=$(gh issue list --repo <slug> --label "quality-debt" --label "status:in-progress" --state open --json number --jq 'length' 2>/dev/null || echo 0)
-QUALITY_DEBT_QUEUED=$(gh issue list --repo <slug> --label "quality-debt" --label "status:queued" --state open --json number --jq 'length' 2>/dev/null || echo 0)
+QUALITY_DEBT_ACTIVE=$(gh issue list --repo <slug> --label "quality-debt" --label "status:in-progress" --state open --json number --jq 'length' || echo 0)
+QUALITY_DEBT_QUEUED=$(gh issue list --repo <slug> --label "quality-debt" --label "status:queued" --state open --json number --jq 'length' || echo 0)
 QUALITY_DEBT_CURRENT=$((QUALITY_DEBT_ACTIVE + QUALITY_DEBT_QUEUED))
 QUALITY_DEBT_MAX=$(( MAX_WORKERS * 30 / 100 ))
 [[ "$QUALITY_DEBT_MAX" -lt 1 ]] && QUALITY_DEBT_MAX=1

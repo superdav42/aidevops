@@ -1607,7 +1607,7 @@ ${type_breakdown}
 			--batch 10 \
 			--create-issues \
 			--min-severity medium \
-			--json 2>/dev/null) || scan_output=""
+			--json) || scan_output=""
 
 		if [[ -n "$scan_output" ]] && echo "$scan_output" | jq -e '.scanned' &>/dev/null; then
 			local scanned
