@@ -111,7 +111,7 @@ npm install grammy
 1. Open Telegram and search for `@BotFather`
 2. Send `/newbot` and follow the prompts
 3. Choose a name (display name) and username (must end in `bot`)
-4. BotFather returns an API token: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`
+4. BotFather returns an API token (format: `<bot-id>:<auth-token>`, e.g. `123456789:YOUR-TOKEN-FROM-BOTFATHER`)
 5. Store the token securely (see [Security Considerations](#security-considerations))
 
 **BotFather commands**:
@@ -448,7 +448,7 @@ The proprietary server means there is **no way to independently verify** what ha
 gopass insert aidevops/telegram/bot-token
 
 # Or via credentials.sh (600 permissions)
-echo 'export TELEGRAM_BOT_TOKEN="123456:ABC..."' >> ~/.config/aidevops/credentials.sh
+echo 'export TELEGRAM_BOT_TOKEN="<your-token>"' >> ~/.config/aidevops/credentials.sh
 
 # NEVER commit tokens to git
 # NEVER log tokens in output
