@@ -1639,6 +1639,7 @@ t165,Provider-agnostic task claiming via TODO.md,marcusquinn,orchestration archi
 
 ## Done
 
+- [x] t1387 Add conversational memory lookup guidance to build.txt harness — three-tier progressive discovery (local cached → local indexed → remote) covering 8 knowledge sources so agents proactively search when users reference past work from prior sessions #feature #agent #memory ~30m model:opus ref:GH#2798 logged:2026-03-04 pr:#2797 completed:2026-03-04
 - [x] t205 YouTube competitor research and content automation agent #feature #youtube #content ~6h actual:4h logged:2026-02-09 started:2026-02-09 completed:2026-02-09 verified:2026-02-09 pr:#811
   - Notes: Post-merge verification (2026-02-09): ShellCheck clean (SC1091 info only), markdownlint clean after PR #828 fixed 12 MD022 violations, all cross-references resolve, live API tests pass (auth-test, channel @mkbhd, quota tracking). 9/10000 API units used.
   - [x] t205.1 youtube-helper.sh — YouTube Data API v3 wrapper with SA JWT auth, token caching, quota tracking, 8 commands ~2h pr:#811
