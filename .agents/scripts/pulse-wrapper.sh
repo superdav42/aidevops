@@ -1610,7 +1610,7 @@ ${type_breakdown}
 	fi
 
 	# Compute total issue count across all tools for delta comparison
-	local _cr_current_total_issues=$((_cr_current_sonar_issues + _cr_current_sc_errors + _cr_current_codacy_issues))
+	local _cr_current_total_issues=$((_cr_current_sonar_issues + _cr_current_sc_errors + _cr_current_sc_warnings + _cr_current_codacy_issues))
 
 	# Load previous state
 	local _cr_prev_gate="UNKNOWN"
@@ -1654,18 +1654,21 @@ ${type_breakdown}
 		_cr_trigger_reason="first sweep — establishing baseline"
 	fi
 
-	# Save current state for next comparison
-	cat >"$_cr_state_file" <<-CRSTATE
+	# Save current state for next comparison (atomic write via tmp+rename)
+	local _cr_tmp_file="${_cr_state_file}.tmp.$$"
+	cat >"$_cr_tmp_file" <<-CRSTATE
 		{
 			"gate_status": "${_cr_current_gate}",
 			"total_issues": ${_cr_current_total_issues},
 			"sonar_issues": ${_cr_current_sonar_issues},
 			"shellcheck_errors": ${_cr_current_sc_errors},
+			"shellcheck_warnings": ${_cr_current_sc_warnings},
 			"codacy_issues": ${_cr_current_codacy_issues},
 			"high_critical": ${_cr_current_high_critical},
 			"timestamp": "${now_iso}"
 		}
 	CRSTATE
+	mv -f "$_cr_tmp_file" "$_cr_state_file"
 
 	# Build CodeRabbit section based on decision
 	if [[ -n "$_cr_trigger_reason" ]]; then
