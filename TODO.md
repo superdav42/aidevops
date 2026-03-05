@@ -1604,6 +1604,8 @@ t193,setup.sh fails in non-interactive supervisor deploy step,,bugfix|setup,1h,4
 
 ## In Progress
 
+- [ ] t1400 fix: pulse-wrapper.sh 2>/dev/null suppressions — replace kill -0 with ps -p to avoid masking EPERM, remove redundant stderr suppression after -f check #bugfix #quality-debt ~30m ref:GH#2857 started:2026-03-05
+
 - [x] t1388 fix: pulse external-contributor idempotency guard fails closed on API errors — comment check used pipe (gh pr view | grep) which silently returned "no match" on API failure, causing duplicate comments every 2-min pulse cycle (18 duplicates on PR #2792). Fix: fetch comments into variable, check exit code, skip posting if fetch fails. #bugfix #pulse ~30m ref:GH#2802 started:2026-03-04 pr:#2803 completed:2026-03-04
 
 - [x] t1271 Mobile app dev and browser extension dev agents — comprehensive agent suite for building, testing, and publishing mobile apps (Expo + Swift) and browser extensions (Chromium + Firefox). Covers full lifecycle: idea validation, planning, UI/UX design, development, testing (simulator/emulator/device), app store compliance, publishing, monetisation (RevenueCat, ads, freemium), analytics, notifications, and self-improvement. Inspired by Rork and VibeCode capabilities but with open-source aidevops approach. Includes shared subagents for common needs (onboarding, UI design, app store compliance, analytics). #feature #agents #mobile #browser-extension ~12h (ai:10h test:2h) model:opus ref:GH#2004 assignee:marcusquinn started:2026-02-20 pr:#2011 completed:2026-02-20
