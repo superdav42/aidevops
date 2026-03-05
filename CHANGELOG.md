@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.150.0] - 2026-03-05
+
+### Added
+
+- add session count awareness to warn on excessive concurrent sessions (t1398.4) (#2883)
+- add process-focused memory pressure monitor (t1398.5) (#2884)
+
+### Changed
+
+- Refactor: deduplicate CodeRabbit trigger logic in quality sweep (t1401) (#2887)
+- Refactor: use array for trigger_reasons construction in pulse-wrapper.sh (t2856) (#2886)
+- Refactor: collapse redundant jq severity elif/else branches (#2824)
+
+### Fixed
+
+- replace grep-based downgrade test with functional test (GH#2867) (#2889)
+- remove stderr suppression from write_proof_log calls (t2865) (#2888)
+- add process resource guard to pulse-wrapper.sh (t1398.1) (#2881)
+- add pulse self-watchdog idle detection (t1398.3) (#2882)
+- harden ShellCheck invocation to prevent exponential expansion (t1398.2) (#2885)
+- replace kill -0 with ps -p and remove redundant 2>/dev/null in pulse-wrapper.sh (#2879)
+- remove 2>/dev/null from db() calls in todo-sync.sh to preserve diagnostic stderr (#2880)
+- remove blanket stderr suppression from db() call in todo-sync.sh (#2872)
+- address critical quality-debt in sanity-check.sh (GH#2866) (#2870)
+- add first-run guard and remove over-sensitive condition in CodeRabbit sweep trigger (#2852)
+- add watchdog timeout to pulse-wrapper run_pulse() (t1397) (#2853)
+- suppress auto-pickup in pulse --batch mode to prevent phantom batches (#2837) (#2843)
+- skip batch tasks in Phase 0.6 reconcile-queue to prevent premature cancellation (#2844)
+- prevent Phase 0.9 sanity check from resetting completed tasks to queued (t2838) (#2845)
+- skip delta-based CodeRabbit triggers on first sweep run (t1392) (#2835)
+- improve actionability of conversational memory lookup guidance (t1391) (#2830)
+- use full URL with {slug} placeholder in wiki clone example (#2831)
+- add busy_timeout to sqliteExec() preventing database locked errors (#2828)
+- replace 2>/dev/null with --silent on gh api label POST calls (#2829)
+- remove 2>/dev/null from gh pr view in check_external_contributor_pr (#2825)
+- move external-contributor idempotency guard from prompt to shell function (t1391) (#2810)
+- make CodeRabbit sweep conditional on quality gate changes (t1390) (#2808)
+- rewrite pulse external-contributor idempotency guard to fail closed on API errors (#2803)
+- use jq any() for robust pulse idempotency guard label check (#2801)
+
 ## [2.147.3] - 2026-03-01
 
 ### Added
