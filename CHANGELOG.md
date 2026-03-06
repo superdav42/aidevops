@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.152.0] - 2026-03-06
+
+### Added
+
+- wire task decomposition into dispatch pipeline (t1408.2) (#2997)
+- t1408.4 add batch execution strategies for task decomposition dispatch (#3000)
+- t1407 check contributing guidelines before filing on external repos (#3001)
+- t1408 recursive task decomposition for dispatch — plan, brief, and TODO entry
+- add CI self-healing to pulse — re-run stale checks after workflow fixes merge (#2981)
+- add CI failure pattern detection to pulse — detect systemic workflow bugs (#2976)
+
+### Changed
+
+- Refactor: extract session flag paths to script-level constants in pulse-wrapper.sh (#2978)
+- Refactor: t1409 classify processes as app vs tool in memory-pressure-monitor (#2998)
+
+### Fixed
+
+- install memory pressure monitor via setup.sh for reboot survival (#2965)
+- prevent orphaned processes from timeout_sec pipe to head in test_smtp (#2970)
+- avoid orphaned processes from timeout_sec pipe to head on macOS (#2971)
+- use character class grep pattern and escape dots in pulse-session-helper (#2977)
+- pulse watchdog — add progress inspection, raise timeouts, reorder main() (#2991)
+- remove blanket stderr suppression in cleanup_worktrees() (#3004)
+- remove stderr suppression from jq calls in config-helper.sh (#3002)
+- replace blanket 2>/dev/null with explicit file checks in shell-env.sh (#3003)
+- calculate LLM cost from tokens — OpenCode does not provide msg.cost (#2972)
+- review-bot-gate distinguishes rate-limit notices from real reviews (#2980) (#2982)
+- resolve CI check failures on all PRs — regex false positive + concurrency (#2974)
+
 ## [2.151.6] - 2026-03-06
 
 ### Changed
