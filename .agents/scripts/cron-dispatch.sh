@@ -61,6 +61,11 @@ log_info() {
 	return 0
 }
 
+log_warn() {
+	echo "[$(log_timestamp)] [WARN] $*" >&2
+	return 0
+}
+
 log_error() {
 	echo "[$(log_timestamp)] [ERROR] $*" >&2
 	return 0
@@ -384,7 +389,7 @@ ${task}"
 				scan_exit=$?
 			fi
 
-			if [[ "$scan_exit" -eq 1 ]] && echo "$scan_result" | grep -q '"result":"findings"' 2>/dev/null; then
+			if [[ "$scan_exit" -eq 1 ]] && echo "$scan_result" | grep -q '"result":"findings"'; then
 				local scan_severity=""
 				scan_severity=$(echo "$scan_result" | jq -r '.max_severity // "UNKNOWN"') || scan_severity="UNKNOWN"
 				log_info "Content scan: injection patterns detected in task (severity: ${scan_severity})"

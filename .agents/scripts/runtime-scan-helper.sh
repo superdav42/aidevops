@@ -51,6 +51,7 @@ set -euo pipefail
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+# Source shared-constants.sh — don't suppress stderr so sourcing errors are visible
 source "${SCRIPT_DIR}/shared-constants.sh" || true
 
 # Fallback colours if shared-constants.sh not loaded
