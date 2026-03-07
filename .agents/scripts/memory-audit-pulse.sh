@@ -240,7 +240,7 @@ EOF
 	if [[ -n "$all_consolidated_ids" ]]; then
 		local raw_ids=""
 		if command -v jq &>/dev/null; then
-			raw_ids=$(echo "$all_consolidated_ids" | jq -r '.[]' 2>/dev/null | sort -u)
+			raw_ids=$(echo "$all_consolidated_ids" | jq -r '.[]' | sort -u)
 		elif command -v python3 &>/dev/null; then
 			raw_ids=$(echo "$all_consolidated_ids" | python3 -c "
 import sys, json
@@ -254,7 +254,7 @@ for line in sys.stdin:
             print(f'Python fallback: JSON parse error: {e}', file=sys.stderr)
 for i in sorted(ids):
     print(i)
-" 2>&1)
+")
 		fi
 		# Validate each ID matches expected mem_* pattern (prevent SQL injection)
 		local validated_ids=""
@@ -342,13 +342,13 @@ Only include memory IDs that actually appear in the MEMORIES above."
 	# Parse the response — jq preferred, python3 fallback
 	local insight connections source_ids
 	if command -v jq &>/dev/null; then
-		insight=$(echo "$response" | jq -r '.insight // empty' 2>/dev/null || echo "")
-		connections=$(echo "$response" | jq -c '.connections // []' 2>/dev/null || echo "[]")
-		source_ids=$(echo "$response" | jq -c '.source_ids // []' 2>/dev/null || echo "[]")
+		insight=$(echo "$response" | jq -r '.insight // empty' || echo "")
+		connections=$(echo "$response" | jq -c '.connections // []' || echo "[]")
+		source_ids=$(echo "$response" | jq -c '.source_ids // []' || echo "[]")
 	elif command -v python3 &>/dev/null; then
-		insight=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('insight',''))" 2>/dev/null || echo "")
-		connections=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('connections',[])))" 2>/dev/null || echo "[]")
-		source_ids=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('source_ids',[])))" 2>/dev/null || echo "[]")
+		insight=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('insight',''))" || echo "")
+		connections=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('connections',[])))" || echo "[]")
+		source_ids=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('source_ids',[])))" || echo "[]")
 	else
 		[[ "$quiet" != "true" ]] && log_warn "Consolidate: neither jq nor python3 available for parsing"
 		echo "0"
@@ -389,7 +389,7 @@ EOF
 	local conn_count=0
 	local conn_pairs=""
 	if command -v jq &>/dev/null; then
-		conn_pairs=$(printf '%s' "$connections" | jq -r '.[] | "\(.from_id)|\(.to_id)"' 2>/dev/null || echo "")
+		conn_pairs=$(printf '%s' "$connections" | jq -r '.[] | "\(.from_id)|\(.to_id)"' || echo "")
 	elif command -v python3 &>/dev/null; then
 		conn_pairs=$(printf '%s' "$connections" | python3 -c "
 import sys, json
@@ -398,7 +398,7 @@ try:
         print(f\"{c.get('from_id', '')}|{c.get('to_id', '')}\")
 except (json.JSONDecodeError, TypeError) as e:
     print(f'Python fallback: connection parse error: {e}', file=sys.stderr)
-" 2>/dev/null || echo "")
+" || echo "")
 	fi
 
 	if [[ -n "$conn_pairs" ]]; then
