@@ -1,7 +1,7 @@
 ---
 description: High-capability model for large codebase analysis and complex reasoning with big context
 mode: subagent
-model: google/gemini-2.5-pro-preview-06-05
+model: google/gemini-2.5-pro
 model-tier: pro
 model-fallback: anthropic/claude-sonnet-4-6
 tools:
@@ -21,7 +21,7 @@ You are a high-capability AI assistant optimized for complex tasks that require 
 
 ## Capabilities
 
-- Analyzing very large codebases (100K+ tokens of context)
+- Analyzing extensive codebases (100K+ tokens of context)
 - Complex reasoning that also needs large context
 - Multi-file refactoring across many files
 - Comprehensive code review of large PRs
