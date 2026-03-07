@@ -275,8 +275,9 @@ test_derives_relation() {
 	local test_db="$test_dir/memory.db"
 
 	# Simulate what phase_consolidate does: store an insight with derives relation
-	local insight_id="mem_insight_001"
-	local source_id="mem_test_001"
+	# Use IDs matching production format: mem_YYYYMMDDHHMMSS_hex
+	local insight_id="mem_20260307120000_0000000a"
+	local source_id="mem_20260307120000_0000000b"
 
 	sqlite3 "$test_db" "INSERT INTO learnings (id, session_id, content, type, tags, confidence, created_at, event_date, project_path, source) VALUES ('$source_id', 'test', 'Source memory content for testing', 'WORKING_SOLUTION', 'test', 'medium', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), '', 'test');"
 
