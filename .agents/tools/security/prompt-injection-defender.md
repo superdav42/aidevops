@@ -658,7 +658,7 @@ For worker dispatch pipelines, scan issue/PR content before it reaches the worke
 issue_body=$(gh issue view "$issue_num" --repo "$slug" --json body -q .body)
 scan_exit=0
 scan_result=$(echo "$issue_body" | runtime-scan-helper.sh scan \
-    --type issue-body --source "${slug}#${issue_num}" 2>/dev/null) || scan_exit=$?
+    --type issue-body --source "${slug}#${issue_num}") || scan_exit=$?
 
 if [[ "$scan_exit" -eq 1 ]] && echo "$scan_result" | grep -q '"result":"findings"' 2>/dev/null; then
     # Content has injection patterns — warn the worker

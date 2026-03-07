@@ -275,7 +275,7 @@ cmd_wrap() {
 
 	# Scan the content first (results go to stderr)
 	local scan_result scan_exit
-	scan_result=$(printf '%s' "$content" | RUNTIME_SCAN_QUIET="${RUNTIME_SCAN_QUIET}" cmd_scan --type "$content_type" --source "$source" 2>/dev/null) && scan_exit=0 || scan_exit=$?
+	scan_result=$(printf '%s' "$content" | RUNTIME_SCAN_QUIET="${RUNTIME_SCAN_QUIET}" cmd_scan --type "$content_type" --source "$source") && scan_exit=0 || scan_exit=$?
 
 	# Handle scan failure — don't wrap content that couldn't be scanned
 	if [[ "$scan_exit" -ne 0 && "$scan_exit" -ne 1 ]]; then
