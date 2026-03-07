@@ -85,10 +85,11 @@ CREATE TABLE IF NOT EXISTS learning_access (
 );
 
 CREATE TABLE IF NOT EXISTS learning_relations (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL,
     supersedes_id TEXT,
     relation_type TEXT CHECK(relation_type IN ('updates', 'extends', 'derives')),
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, supersedes_id, relation_type)
 );
 
 CREATE TABLE IF NOT EXISTS memory_consolidations (
@@ -332,9 +333,10 @@ CREATE TABLE IF NOT EXISTS learning_access (
     id TEXT PRIMARY KEY, last_accessed_at TEXT, access_count INTEGER DEFAULT 0, auto_captured INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS learning_relations (
-    id TEXT PRIMARY KEY, supersedes_id TEXT,
+    id TEXT NOT NULL, supersedes_id TEXT,
     relation_type TEXT CHECK(relation_type IN ('updates', 'extends', 'derives')),
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, supersedes_id, relation_type)
 );
 EOF
 

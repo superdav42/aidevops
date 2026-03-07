@@ -120,11 +120,13 @@ ALTER TABLE learnings_new RENAME TO learnings;
 --   updates: id = new version,    supersedes_id = old version it replaces
 --   extends: id = extension,      supersedes_id = memory being extended
 --   derives: id = derived memory, supersedes_id = source memory it derives from
+-- Composite PK allows fan-in: one memory can derive from multiple sources.
 CREATE TABLE IF NOT EXISTS learning_relations (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL,
     supersedes_id TEXT,
     relation_type TEXT CHECK(relation_type IN ('updates', 'extends', 'derives')),
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, supersedes_id, relation_type)
 );
 EOF
 
@@ -142,12 +144,14 @@ EOF
 	fi
 
 	# Ensure relations table exists (for databases created before this feature)
+	# Composite PK allows fan-in: one memory can derive from multiple sources.
 	db "$MEMORY_DB" <<'EOF'
 CREATE TABLE IF NOT EXISTS learning_relations (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL,
     supersedes_id TEXT,
     relation_type TEXT CHECK(relation_type IN ('updates', 'extends', 'derives')),
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, supersedes_id, relation_type)
 );
 EOF
 
@@ -480,11 +484,13 @@ CREATE TABLE IF NOT EXISTS learning_access (
 --   updates: id = new version,    supersedes_id = old version it replaces
 --   extends: id = extension,      supersedes_id = memory being extended
 --   derives: id = derived memory, supersedes_id = source memory it derives from
+-- Composite PK allows fan-in: one memory can derive from multiple sources.
 CREATE TABLE IF NOT EXISTS learning_relations (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL,
     supersedes_id TEXT,
     relation_type TEXT CHECK(relation_type IN ('updates', 'extends', 'derives')),
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, supersedes_id, relation_type)
 );
 
 -- Learning-entity junction table (t1363.3) — links learnings to entities
@@ -692,7 +698,7 @@ try:
             break
 except (json.JSONDecodeError, ValueError, KeyError, TypeError) as e:
     print(f'Semantic duplicate check: parse error: {e}', file=sys.stderr)
-" <<<"$search_result" 2>/dev/null || echo "")
+" <<<"$search_result" || echo "")
 	fi
 
 	if [[ -n "$match_id" ]]; then

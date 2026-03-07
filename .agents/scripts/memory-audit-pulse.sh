@@ -364,6 +364,24 @@ Only include memory IDs that actually appear in the MEMORIES above."
 		return 0
 	fi
 
+	# Validate source_ids is a non-empty JSON array before persisting
+	local source_ids_valid="false"
+	if command -v jq &>/dev/null; then
+		if echo "$source_ids" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+			source_ids_valid="true"
+		fi
+	elif command -v python3 &>/dev/null; then
+		if echo "$source_ids" | python3 -c "import sys,json; d=json.load(sys.stdin); assert isinstance(d,list) and len(d)>0" 2>/dev/null; then
+			source_ids_valid="true"
+		fi
+	fi
+
+	if [[ "$source_ids_valid" != "true" ]]; then
+		[[ "$quiet" != "true" ]] && log_warn "Consolidate: source_ids empty or malformed, skipping insert"
+		echo "0"
+		return 0
+	fi
+
 	# Store the consolidation using printf to safely handle special characters.
 	# The insight/connections/source_ids come from LLM output — single-quote
 	# escaping alone is insufficient for arbitrary text. Use a heredoc with
@@ -736,7 +754,7 @@ cmd_status() {
 		local total
 		total=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM learnings;" 2>/dev/null || echo "0")
 		local consolidations
-		consolidations=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM memory_consolidations;" || echo "0")
+		consolidations=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM memory_consolidations;" 2>/dev/null || echo "0")
 		local db_size
 		db_size=$(du -h "$MEMORY_DB" | cut -f1)
 		log_info "Memory DB: $total memories, $consolidations consolidations, $db_size"
