@@ -214,8 +214,8 @@ phase_consolidate() {
 		return 0
 	fi
 
-	# Ensure memory_consolidations table exists
-	db "$MEMORY_DB" <<'EOF' 2>/dev/null || true
+	# Ensure memory_consolidations table exists (with index, matching _common.sh schema)
+	db "$MEMORY_DB" <<'EOF' || true
 CREATE TABLE IF NOT EXISTS memory_consolidations (
     id TEXT PRIMARY KEY,
     source_ids TEXT NOT NULL,
@@ -223,6 +223,8 @@ CREATE TABLE IF NOT EXISTS memory_consolidations (
     connections TEXT NOT NULL DEFAULT '[]',
     created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
+CREATE INDEX IF NOT EXISTS idx_consolidations_created
+    ON memory_consolidations(created_at DESC);
 EOF
 
 	# Find memories not yet included in any consolidation.
@@ -231,7 +233,7 @@ EOF
 	# We extract all previously consolidated IDs and validate them
 	# against the expected mem_* pattern to prevent SQL injection.
 	local all_consolidated_ids
-	all_consolidated_ids=$(db "$MEMORY_DB" "SELECT source_ids FROM memory_consolidations;" 2>/dev/null || echo "")
+	all_consolidated_ids=$(db "$MEMORY_DB" "SELECT source_ids FROM memory_consolidations;" || echo "")
 
 	# Build a list of already-consolidated memory IDs (validated)
 	local consolidated_set=""
@@ -248,11 +250,11 @@ for line in sys.stdin:
     if line:
         try:
             ids.update(json.loads(line))
-        except Exception:
-            pass
+        except (json.JSONDecodeError, TypeError) as e:
+            print(f'Python fallback: JSON parse error: {e}', file=sys.stderr)
 for i in sorted(ids):
     print(i)
-" 2>/dev/null)
+" 2>&1)
 		fi
 		# Validate each ID matches expected mem_* pattern (prevent SQL injection)
 		local validated_ids=""
@@ -272,13 +274,13 @@ for i in sorted(ids):
 		# Build SQL IN clause from validated IDs
 		local in_clause
 		in_clause=$(echo "$consolidated_set" | tr ',' '\n' | sed "s/.*/'&'/" | paste -sd ',' -)
-		unconsolidated_query="SELECT id, substr(content, 1, 200) as content_preview, type, tags FROM learnings WHERE id NOT IN ($in_clause) ORDER BY created_at DESC LIMIT 20;"
+		unconsolidated_query="SELECT id, replace(replace(substr(content, 1, 200), char(10), ' '), char(13), ' ') AS content_preview, type, tags FROM learnings WHERE id NOT IN ($in_clause) ORDER BY created_at DESC LIMIT 20;"
 	else
-		unconsolidated_query="SELECT id, substr(content, 1, 200) as content_preview, type, tags FROM learnings ORDER BY created_at DESC LIMIT 20;"
+		unconsolidated_query="SELECT id, replace(replace(substr(content, 1, 200), char(10), ' '), char(13), ' ') AS content_preview, type, tags FROM learnings ORDER BY created_at DESC LIMIT 20;"
 	fi
 
 	local unconsolidated
-	unconsolidated=$(db "$MEMORY_DB" "$unconsolidated_query" 2>/dev/null || echo "")
+	unconsolidated=$(db "$MEMORY_DB" "$unconsolidated_query" || echo "")
 
 	if [[ -z "$unconsolidated" ]]; then
 		[[ "$quiet" != "true" ]] && log_success "Consolidate: no unconsolidated memories"
@@ -328,7 +330,7 @@ Only include memory IDs that actually appear in the MEMORIES above."
 
 	# Call haiku for consolidation
 	local response
-	response=$("$ai_helper" --prompt "$prompt" --model haiku --max-tokens 500 2>/dev/null) || {
+	response=$("$ai_helper" --prompt "$prompt" --model haiku --max-tokens 500) || {
 		[[ "$quiet" != "true" ]] && log_warn "Consolidate: LLM call failed, skipping"
 		echo "0"
 		return 0
@@ -385,9 +387,21 @@ EOF
 	# For 'derives', id = the derived/downstream memory, supersedes_id = the source.
 	# We create a relation from to_id -> from_id meaning "to_id derives from from_id".
 	local conn_count=0
+	local conn_pairs=""
 	if command -v jq &>/dev/null; then
-		local conn_pairs
-		conn_pairs=$(echo "$connections" | jq -r '.[] | "\(.from_id)|\(.to_id)"' 2>/dev/null || echo "")
+		conn_pairs=$(printf '%s' "$connections" | jq -r '.[] | "\(.from_id)|\(.to_id)"' 2>/dev/null || echo "")
+	elif command -v python3 &>/dev/null; then
+		conn_pairs=$(printf '%s' "$connections" | python3 -c "
+import sys, json
+try:
+    for c in json.load(sys.stdin):
+        print(f\"{c.get('from_id', '')}|{c.get('to_id', '')}\")
+except (json.JSONDecodeError, TypeError) as e:
+    print(f'Python fallback: connection parse error: {e}', file=sys.stderr)
+" 2>/dev/null || echo "")
+	fi
+
+	if [[ -n "$conn_pairs" ]]; then
 		local now_ts
 		now_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 		while IFS='|' read -r from_id to_id; do
@@ -397,11 +411,11 @@ EOF
 			[[ "$to_id" =~ ^mem_[0-9]{14}_[0-9a-f]+$ ]] || continue
 			# Verify both IDs exist in the database
 			local from_exists to_exists
-			from_exists=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM learnings WHERE id = '$from_id';" 2>/dev/null || echo "0")
-			to_exists=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM learnings WHERE id = '$to_id';" 2>/dev/null || echo "0")
+			from_exists=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM learnings WHERE id = '$from_id';" || echo "0")
+			to_exists=$(db "$MEMORY_DB" "SELECT COUNT(*) FROM learnings WHERE id = '$to_id';" || echo "0")
 			if [[ "$from_exists" == "1" && "$to_exists" == "1" ]]; then
 				# to_id derives from from_id: id=to_id, supersedes_id=from_id
-				db "$MEMORY_DB" "INSERT OR IGNORE INTO learning_relations (id, supersedes_id, relation_type, created_at) VALUES ('$to_id', '$from_id', 'derives', '$now_ts');" 2>/dev/null || true
+				db "$MEMORY_DB" "INSERT OR IGNORE INTO learning_relations (id, supersedes_id, relation_type, created_at) VALUES ('$to_id', '$from_id', 'derives', '$now_ts');" || true
 				conn_count=$((conn_count + 1))
 			fi
 		done <<<"$conn_pairs"

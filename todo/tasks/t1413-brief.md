@@ -15,8 +15,8 @@ mode: subagent
 Add a **memory consolidation phase** to `memory-audit-pulse.sh` that uses a cheap LLM call (haiku-tier, ~$0.001/call) to scan unconsolidated memories, discover cross-cutting connections, and store synthesized insights as new `derives` relations in the existing `learning_relations` table.
 
 Deliverables:
-1. New `phase_consolidate()` function in `memory-audit-pulse.sh` (Phase 3.5, between graduate and opportunity scan)
-2. New `consolidate` subcommand in `memory-helper.sh` for manual invocation
+1. New `phase_consolidate()` function in `memory-audit-pulse.sh` (Phase 4, between graduate and opportunity scan)
+2. New `insights` subcommand in `memory-helper.sh` for manual invocation
 3. New `memory_consolidations` table for storing consolidation insights with source memory IDs
 4. Documentation updates in `memory/README.md`
 
@@ -32,7 +32,7 @@ Cost is negligible (~$0.001-0.01 per audit pulse run on 10-50 memories). Value i
    - `id TEXT PRIMARY KEY` — consolidation ID
    - `source_ids TEXT NOT NULL` — JSON array of memory IDs that were consolidated
    - `insight TEXT NOT NULL` — the synthesized insight
-   - `connections TEXT NOT NULL DEFAULT '[]'` — JSON array of `{from_id, to_id, relationship}` 
+   - `connections TEXT NOT NULL DEFAULT '[]'` — JSON array of `{from_id, to_id, relationship}`
    - `created_at TEXT`
 
 2. **Consolidation logic** in `memory-audit-pulse.sh`:
@@ -44,8 +44,8 @@ Cost is negligible (~$0.001-0.01 per audit pulse run on 10-50 memories). Value i
    - Create `derives` relations in `learning_relations` for discovered connections
 
 3. **Integration**:
-   - `memory-audit-pulse.sh`: new Phase 3.5 between graduate and opportunity scan
-   - `memory-helper.sh consolidate`: manual trigger subcommand
+   - `memory-audit-pulse.sh`: new Phase 4 between graduate and opportunity scan
+   - `memory-helper.sh insights`: manual trigger subcommand
    - Report phase includes consolidation count
    - `/memory-audit` slash command already covers it (runs all phases)
 
@@ -113,7 +113,7 @@ Cost is negligible (~$0.001-0.01 per audit pulse run on 10-50 memories). Value i
 
 ## Relevant Files
 
-- `.agents/scripts/memory-audit-pulse.sh` — main integration point, add Phase 3.5
+- `.agents/scripts/memory-audit-pulse.sh` — main integration point, add Phase 4
 - `.agents/scripts/memory/_common.sh` — schema migration for `memory_consolidations` table
 - `.agents/scripts/memory-helper.sh` — add `consolidate` command dispatch
 - `.agents/scripts/memory/store.sh` — reference for how `learning_relations` are created
