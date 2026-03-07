@@ -791,6 +791,12 @@ _pg_scan_message() {
 		else
 			_pg_scan_patterns_from_stream "$message" < <(_pg_get_patterns)
 		fi
+
+		# Also scan custom patterns against original message (t1412.4 CR fix)
+		# Custom rules may contain patterns that depend on raw Unicode text
+		if [[ -n "$custom_file" && -f "$custom_file" && "$_pg_scan_found" -eq 0 ]]; then
+			_pg_scan_patterns_from_stream "$message" <"$custom_file"
+		fi
 	fi
 
 	if [[ "$_pg_scan_found" -eq 1 ]]; then
