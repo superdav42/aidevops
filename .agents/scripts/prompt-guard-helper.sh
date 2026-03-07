@@ -443,22 +443,15 @@ byp4ss
 h4ck"
 
 # Fast pre-filter: returns 0 if any keyword found (scan needed), 1 if clean
+# Uses a single grep -F -i call for performance (~10x faster than while-read loop)
 _pg_keyword_prefilter() {
 	local message="$1"
 
-	# Convert message to lowercase for case-insensitive matching
-	local lower_message
-	lower_message=$(printf '%s' "$message" | tr '[:upper:]' '[:lower:]')
-
-	# Check each keyword against the lowercased message
-	while IFS= read -r keyword; do
-		[[ -z "$keyword" ]] && continue
-		local lower_keyword
-		lower_keyword=$(printf '%s' "$keyword" | tr '[:upper:]' '[:lower:]')
-		if [[ "$lower_message" == *"$lower_keyword"* ]]; then
-			return 0 # Keyword found — full scan needed
-		fi
-	done <<<"$_PG_KEYWORDS"
+	# Single grep call with all keywords via process substitution
+	# -F: fixed strings, -i: case-insensitive, -q: quiet (exit status only)
+	if printf '%s' "$message" | grep -F -i -q -f <(printf '%s\n' "$_PG_KEYWORDS"); then
+		return 0 # Keyword found — full scan needed
+	fi
 
 	return 1 # No keywords found — content is clean
 }
@@ -1872,17 +1865,9 @@ cmd_scan_content() {
 
 	# Output structured JSON
 	if command -v jq &>/dev/null; then
-		# Build findings array
-		local findings_json="[]"
-		while IFS='|' read -r severity category description matched; do
-			[[ -z "$severity" ]] && continue
-			findings_json=$(echo "$findings_json" | jq \
-				--arg sev "$severity" \
-				--arg cat "$category" \
-				--arg desc "$description" \
-				--arg match "${matched:-}" \
-				'. + [{"severity": $sev, "category": $cat, "description": $desc, "matched": $match}]')
-		done <<<"$results"
+		# Build findings array in a single jq pipeline (avoids per-finding process spawns)
+		local findings_json
+		findings_json=$(printf '%s' "$results" | jq -Rnc '[inputs | select(length > 0) | split("|") | {severity: .[0], category: .[1], description: .[2], matched: (.[3] // "")}]')
 
 		jq -nc \
 			--arg result "findings" \

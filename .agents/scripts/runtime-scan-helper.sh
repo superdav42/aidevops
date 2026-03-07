@@ -370,7 +370,7 @@ _rs_log_scan() {
 			--arg worker "$RUNTIME_SCAN_WORKER_ID" \
 			--arg session "$RUNTIME_SCAN_SESSION_ID" \
 			'{timestamp: $ts, content_type: $type, source: $source, result: $result, finding_count: $findings, max_severity: $severity, byte_count: $bytes, scan_duration_ms: $duration, risk_level: $risk, policy: $policy, worker_id: $worker, session_id: $session}' \
-			>>"$log_file" 2>/dev/null || true
+			>>"$log_file" || true
 	else
 		# Fallback without jq — escape untrusted values to prevent JSON injection
 		local safe_source safe_worker safe_session
@@ -478,9 +478,12 @@ cmd_scan() {
 	local start_time
 	start_time=$(date +%s%N 2>/dev/null || date +%s)
 
-	# Run prompt-guard-helper.sh scan-stdin with appropriate policy
+	# Run prompt-guard-helper.sh scan-content for structured JSON output (t1412.4 CR6)
+	# Uses scan-content instead of scan-stdin to get machine-parseable JSON
+	# with finding_count, max_severity, and findings array — avoiding fragile
+	# grep-based parsing of human-formatted stderr.
 	local scan_output scan_exit
-	scan_output=$(printf '%s' "$content" | PROMPT_GUARD_POLICY="$policy" PROMPT_GUARD_QUIET="true" "$PROMPT_GUARD_HELPER" scan-stdin 2>&1) && scan_exit=0 || scan_exit=$?
+	scan_output=$(printf '%s' "$content" | PROMPT_GUARD_QUIET="true" "$PROMPT_GUARD_HELPER" scan-content --type "$content_type" --source "$source" 2>/dev/null) && scan_exit=0 || scan_exit=$?
 
 	local end_time
 	end_time=$(date +%s%N 2>/dev/null || date +%s)
@@ -495,27 +498,60 @@ cmd_scan() {
 		scan_duration_ms=$(((end_time - start_time) * 1000))
 	fi
 
-	# Parse scan results
+	# Parse structured JSON scan results
 	local result="clean"
 	local finding_count=0
 	local max_severity="NONE"
 
-	if [[ "$scan_exit" -ne 0 ]] || [[ "$scan_output" != *"CLEAN"* ]]; then
+	if [[ "$scan_exit" -eq 1 ]] && [[ -n "$scan_output" ]]; then
+		# scan-content returns exit 1 with structured JSON on findings
 		result="findings"
 
-		# Count findings from scan output (lines with severity markers)
-		finding_count=$(echo "$scan_output" | grep -cE '^\s*\[(CRITICAL|HIGH|MEDIUM|LOW)\]' 2>/dev/null || echo "0")
-
-		# Extract max severity
-		if echo "$scan_output" | grep -q '\[CRITICAL\]' 2>/dev/null; then
-			max_severity="CRITICAL"
-		elif echo "$scan_output" | grep -q '\[HIGH\]' 2>/dev/null; then
-			max_severity="HIGH"
-		elif echo "$scan_output" | grep -q '\[MEDIUM\]' 2>/dev/null; then
-			max_severity="MEDIUM"
-		elif echo "$scan_output" | grep -q '\[LOW\]' 2>/dev/null; then
-			max_severity="LOW"
+		if command -v jq &>/dev/null; then
+			finding_count=$(printf '%s' "$scan_output" | jq -r '.finding_count // 0') || finding_count=0
+			max_severity=$(printf '%s' "$scan_output" | jq -r '.max_severity // "NONE"') || max_severity="NONE"
+		else
+			# Fallback: extract from JSON without jq using parameter expansion
+			if [[ "$scan_output" == *'"finding_count":'* ]]; then
+				finding_count=${scan_output#*\"finding_count\":}
+				finding_count=${finding_count%%[,\}]*}
+				finding_count=${finding_count//[!0-9]/}
+				[[ -z "$finding_count" ]] && finding_count=0
+			fi
+			if [[ "$scan_output" == *'"max_severity":"'* ]]; then
+				max_severity=${scan_output#*\"max_severity\":\"}
+				max_severity=${max_severity%%\"*}
+				[[ -z "$max_severity" ]] && max_severity="NONE"
+			fi
 		fi
+
+		# Apply policy-based severity threshold
+		# Permissive policy ignores LOW findings, moderate ignores INFO
+		local dominated="false"
+		case "$policy" in
+		permissive)
+			if [[ "$max_severity" == "LOW" || "$max_severity" == "NONE" ]]; then
+				dominated="true"
+			fi
+			;;
+		moderate)
+			if [[ "$max_severity" == "NONE" ]]; then
+				dominated="true"
+			fi
+			;;
+		strict)
+			# Strict reports everything
+			;;
+		esac
+
+		if [[ "$dominated" == "true" ]]; then
+			result="clean"
+			_rs_log_info "Findings below policy threshold (${max_severity} < ${policy}), treating as clean"
+		fi
+	elif [[ "$scan_exit" -ge 2 ]]; then
+		# Scanner error — propagate
+		_rs_log_error "prompt-guard-helper scan-content failed (exit: ${scan_exit})"
+		return 2
 	fi
 
 	# Log the scan result
@@ -529,16 +565,9 @@ cmd_scan() {
 	else
 		_rs_log_warn "FINDINGS — ${finding_count} pattern(s) detected in ${content_type} from ${source} (max: ${max_severity})"
 
-		# Output structured result for caller
-		if command -v jq &>/dev/null; then
-			jq -nc \
-				--arg result "findings" \
-				--arg type "$content_type" \
-				--arg source "$source" \
-				--argjson count "$finding_count" \
-				--arg severity "$max_severity" \
-				--arg policy "$policy" \
-				'{result: $result, content_type: $type, source: $source, finding_count: $count, max_severity: $severity, policy: $policy}'
+		# Forward the structured JSON from scan-content, enriched with policy
+		if command -v jq &>/dev/null && [[ -n "$scan_output" ]]; then
+			printf '%s' "$scan_output" | jq -c --arg policy "$policy" '. + {policy: $policy}'
 		else
 			# Escape untrusted values to prevent JSON injection
 			local safe_source safe_type
@@ -547,9 +576,6 @@ cmd_scan() {
 			printf '{"result":"findings","content_type":"%s","source":"%s","finding_count":%d,"max_severity":"%s","policy":"%s"}\n' \
 				"$safe_type" "$safe_source" "$finding_count" "$max_severity" "$policy"
 		fi
-
-		# Also output the detailed findings to stderr for agent context
-		echo "$scan_output" >&2
 
 		return 1
 	fi
