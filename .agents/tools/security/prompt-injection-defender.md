@@ -510,7 +510,7 @@ This is enforced by GitHub when using App installation tokens (Strategy 1). With
 
 ## Runtime Content Scanning (t1412.4)
 
-Runtime scanning adds an enforcement layer that scans content as it flows through worker pipelines, rather than relying on agents to remember to call the scanner manually.
+Runtime scanning adds an automated detection and annotation layer that scans content as it flows through worker pipelines, rather than relying on agents to remember to call the scanner manually. It does not enforce policy itself — actual enforcement is handled by sandboxing (fake HOME), scoped tokens (t1412.2), and network controls (t1412.3). The scanner augments these enforcement layers with visibility into what content contains.
 
 ### Architecture
 

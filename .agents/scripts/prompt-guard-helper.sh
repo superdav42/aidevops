@@ -685,13 +685,64 @@ _pg_scan_message() {
 	# regex scan entirely. ~100x faster for clean content (the common case).
 	# Run against both original and normalized forms.
 	if ! _pg_keyword_prefilter "$message" && ! _pg_keyword_prefilter "$normalized_message"; then
-		# No keywords found — content is almost certainly clean.
-		# Still check for zero-width/invisible chars (no keyword needed).
-		# Use _pg_match for portable detection (handles grep -P absence).
-		if ! _pg_match '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\x{200B}\x{200C}\x{200D}\x{FEFF}]' "$message"; then
+		# No keywords found. Before returning clean, run structural checks
+		# that detect patterns without keywords: URL-encoded payloads,
+		# repeated escape sequences, fake delimiters/role markers,
+		# homoglyphs, and invisible/zero-width characters.
+		# These are lightweight checks (~10 regex tests) — much cheaper
+		# than the full pattern set but catch keyword-free attacks.
+		local has_structural="false"
+
+		# Invisible/zero-width characters (no keyword needed)
+		if _pg_match '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\x{200B}\x{200C}\x{200D}\x{FEFF}]' "$message"; then
+			has_structural="true"
+		fi
+
+		# URL-encoded payloads: 6+ consecutive %XX sequences
+		if [[ "$has_structural" == "false" ]] && _pg_match '%[0-9a-fA-F]{2}(%[0-9a-fA-F]{2}){5,}' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		# Repeated hex escape sequences: 4+ consecutive \xNN
+		if [[ "$has_structural" == "false" ]] && _pg_match '\\x[0-9a-fA-F]{2}(\\x[0-9a-fA-F]{2}){3,}' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		# Repeated Unicode escape sequences: 4+ consecutive \uXXXX
+		if [[ "$has_structural" == "false" ]] && _pg_match '\\u[0-9a-fA-F]{4}(\\u[0-9a-fA-F]{4}){3,}' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		# Fake tool output / conversation turn boundaries
+		if [[ "$has_structural" == "false" ]] && _pg_match '</?tool_output>|</?function_result>|</?tool_response>|</?api_response>' "$scan_message"; then
+			has_structural="true"
+		fi
+		if [[ "$has_structural" == "false" ]] && _pg_match '<\|user\|>|<\|assistant\|>|<\|human\|>|<\|ai\|>' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		# Homoglyph patterns (Cyrillic/Greek mixed with Latin injection terms)
+		if [[ "$has_structural" == "false" ]] && _pg_match '\p{Cyrillic}.*(gnore|verride|ystem|rompt|nstruction)' "$scan_message"; then
+			has_structural="true"
+		fi
+		if [[ "$has_structural" == "false" ]] && _pg_match '\p{Greek}.*(gnore|verride|ystem|rompt|nstruction)' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		# Zero-width space sequences (2+ consecutive)
+		if [[ "$has_structural" == "false" ]] && _pg_match '[\x{200B}]{2,}|[\x{200C}]{2,}|[\x{200D}]{2,}' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		# Mixed script with injection terms
+		if [[ "$has_structural" == "false" ]] && _pg_match '\p{Cyrillic}[\x00-\x7F]*(nstruction|ommand|xecute|un\b)|\p{Greek}[\x00-\x7F]*(nstruction|ommand|xecute|un\b)' "$scan_message"; then
+			has_structural="true"
+		fi
+
+		if [[ "$has_structural" == "false" ]]; then
 			return 0
 		fi
-		# Fall through to full scan only for invisible character detection
+		# Fall through to full scan for structural pattern detection
 	fi
 
 	# Try YAML patterns first (comprehensive), fall back to inline (core set)
@@ -1781,11 +1832,19 @@ cmd_scan_content() {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		--type)
-			content_type="${2:-}"
+			if [[ $# -lt 2 || -z "${2:-}" || "${2:0:2}" == "--" ]]; then
+				_pg_log_error "Missing value for --type"
+				return 2
+			fi
+			content_type="$2"
 			shift 2
 			;;
 		--source)
-			source_id="${2:-}"
+			if [[ $# -lt 2 || -z "${2:-}" || "${2:0:2}" == "--" ]]; then
+				_pg_log_error "Missing value for --source"
+				return 2
+			fi
+			source_id="$2"
 			shift 2
 			;;
 		*)
