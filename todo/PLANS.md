@@ -22,6 +22,40 @@ Each plan includes:
 
 ## Active Plans
 
+### [2026-03-07] Convos Encrypted Messaging Agent
+
+**Status:** Planning
+**Estimate:** ~2h (ai:1.5h read:30m)
+**TODO:** t1414 (parent), t1414.1-t1414.2 (subtasks)
+**Logged:** 2026-03-07
+**Upstream skill:** `https://convos.org/skill.md`
+
+<!--TOON:plan{id,title,status,phase,total_phases,owner,tags,est,est_ai,est_read,logged}:
+p042,Convos Encrypted Messaging Agent,planning,0,2,,agent|communications|xmtp|convos,2h,1.5h,30m,2026-03-07T00:00Z
+-->
+
+#### Purpose
+
+Add a Convos subagent to the communications domain. [Convos](https://convos.org) is an encrypted messaging app built on XMTP that provides a CLI (`@xmtp/convos-cli`) for agent participation in conversations. The upstream project publishes a well-structured skill file at `https://convos.org/skill.md` covering the full agent lifecycle: CLI installation, joining/creating conversations, real-time participation via `convos agent serve` (ndjson stdin/stdout protocol), bridge script templates, group management, and behavioural principles.
+
+**Relationship to existing agents:** We already have `xmtp.md` covering the protocol/SDK layer. Convos is a distinct product built on XMTP — a consumer-facing encrypted chat app with its own CLI and agent mode. The two agents are complementary: `xmtp.md` for building on the protocol, `convos.md` for participating in Convos conversations.
+
+#### Phases
+
+- [ ] **Phase 1 — Create agent file** (t1414.1, ~1h): Ingest upstream skill content into `.agents/services/communications/convos.md`. Add aidevops frontmatter (mode, tools, description), `AI-CONTEXT` markers, Quick Reference section, and Related section linking to `xmtp.md`, `simplex.md`, `matterbridge.md`. Adapt bridge script section to reference aidevops dispatch patterns instead of OpenClaw-specific calls.
+- [ ] **Phase 2 — Index and cross-reference** (t1414.2, ~30m): Add `convos` to `subagent-index.toon` communications entry. Add to AGENTS.md domain index communications list. Update `xmtp.md` Production Apps table (Convos URL changed from `converse.xyz` to `convos.org`).
+
+#### Upstream Tracking
+
+The skill is published at `https://convos.org/skill.md`. Track for updates — if the CLI or agent serve protocol changes, the agent file should be refreshed. Consider adding to a future skill-sync mechanism.
+
+#### Decision Log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-03-07 | Separate file from xmtp.md | Convos is a distinct product with its own CLI; xmtp.md covers the protocol layer. Keeping them separate follows the pattern of other comms agents (e.g., Matrix protocol vs Matrix bot). |
+| 2026-03-07 | Ingest upstream skill rather than link-only | The skill content is substantial and well-structured. Ingesting ensures availability even if the upstream URL changes, and allows aidevops-specific adaptations. |
+
 ### [2026-03-06] Recursive Task Decomposition for Dispatch — Classify/Decompose Pipeline
 
 **Status:** Planning
