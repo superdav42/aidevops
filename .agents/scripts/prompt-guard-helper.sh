@@ -529,14 +529,12 @@ sys.stdout.write(unicodedata.normalize('NFKC', text))
 # ============================================================
 
 # Detect best available regex tool (PCRE support required for \s, \b, etc.)
-# Priority: rg (ripgrep) > ggrep -P (GNU grep) > grep -P > grep -E (degraded)
+# Priority: rg (ripgrep, PCRE2) > grep -E (ERE with pattern conversion)
+# grep -P / ggrep -P removed for macOS/BSD portability — these are non-portable
+# and cause errors on systems without GNU grep.
 _pg_detect_grep_cmd() {
 	if command -v rg &>/dev/null; then
 		echo "rg"
-	elif command -v ggrep &>/dev/null && ggrep -P "" /dev/null 2>/dev/null; then
-		echo "ggrep"
-	elif grep -P "" /dev/null 2>/dev/null; then
-		echo "grep"
 	else
 		echo "grep-ere"
 	fi
@@ -565,19 +563,11 @@ _pg_match() {
 		printf '%s' "$message" | rg -qU -- "$pattern" 2>/dev/null
 		return $?
 		;;
-	ggrep)
-		printf '%s' "$message" | ggrep -qPz -- "$pattern" 2>/dev/null
-		return $?
-		;;
-	grep)
-		printf '%s' "$message" | grep -qPz -- "$pattern" 2>/dev/null
-		return $?
-		;;
 	grep-ere)
-		# Degrade: convert \s to [[:space:]], \b to word boundary approximation
+		# Convert PCRE features to ERE equivalents for portability
 		local ere_pattern
 		ere_pattern=$(printf '%s' "$pattern" | sed 's/\\s/[[:space:]]/g; s/\\b//g')
-		printf '%s' "$message" | grep -qEz -- "$ere_pattern" 2>/dev/null
+		printf '%s' "$message" | grep -qE -- "$ere_pattern" 2>/dev/null
 		return $?
 		;;
 	esac
@@ -594,12 +584,6 @@ _pg_extract_match() {
 	case "$cmd" in
 	rg)
 		printf '%s' "$message" | rg -o -- "$pattern" 2>/dev/null | head -1
-		;;
-	ggrep)
-		printf '%s' "$message" | ggrep -oP -- "$pattern" 2>/dev/null | head -1
-		;;
-	grep)
-		printf '%s' "$message" | grep -oP -- "$pattern" 2>/dev/null | head -1
 		;;
 	grep-ere)
 		local ere_pattern
@@ -704,7 +688,19 @@ _pg_scan_message() {
 		fi
 	fi
 
-	if [[ "$_has_dynamic_patterns" == "false" ]] && ! _pg_keyword_prefilter "$message" && ! _pg_keyword_prefilter "$normalized_message"; then
+	# Also disable fast-path when normalization is unavailable — fullwidth
+	# Unicode variants of keywords won't match the keyword list without NFKC,
+	# so skipping the full scan would create a bypass.
+	local _normalizer_available="true"
+	if [[ "$normalized_message" == "$message" ]]; then
+		local _norm_engine
+		_norm_engine=$(_pg_detect_normalizer)
+		if [[ "$_norm_engine" == "none" ]]; then
+			_normalizer_available="false"
+		fi
+	fi
+
+	if [[ "$_has_dynamic_patterns" == "false" ]] && [[ "$_normalizer_available" == "true" ]] && ! _pg_keyword_prefilter "$message" && ! _pg_keyword_prefilter "$normalized_message"; then
 		# No keywords found and no dynamic patterns to check.
 		# Before returning clean, run structural checks that detect
 		# patterns without keywords: URL-encoded payloads, repeated
@@ -1324,9 +1320,6 @@ cmd_status() {
 	case "$regex_engine" in
 	rg)
 		echo -e "  Regex engine:     ${GREEN}ripgrep${NC} (PCRE2, optimal)"
-		;;
-	ggrep | grep)
-		echo -e "  Regex engine:     ${GREEN}grep -P${NC} (PCRE)"
 		;;
 	grep-ere)
 		echo -e "  Regex engine:     ${YELLOW}grep -E${NC} (ERE, degraded — install ripgrep for full support)"

@@ -194,7 +194,7 @@ _rs_wrap_content() {
 	local risk_level
 	risk_level=$(_rs_risk_level "$content_type")
 
-	# Escape source to prevent boundary tag spoofing via quotes/newlines
+	# Escape source to prevent boundary tag spoofing via quotes/newlines/format strings
 	local escaped_source="$source"
 	escaped_source=${escaped_source//\\/\\\\}
 	escaped_source=${escaped_source//\"/\\\"}
@@ -202,6 +202,8 @@ _rs_wrap_content() {
 	escaped_source=${escaped_source//$'\n'/ }
 	# Strip closing bracket to prevent tag escape
 	escaped_source=${escaped_source//]/}
+	# Escape percent signs to prevent printf format string injection
+	escaped_source=${escaped_source//%/%%}
 
 	printf '[UNTRUSTED-DATA-%s type="%s" source="%s" risk="%s"]\n' \
 		"$boundary_id" "$content_type" "$escaped_source" "$risk_level"
@@ -302,7 +304,9 @@ cmd_wrap() {
 	# Output wrapped content with boundary tags
 	_rs_wrap_content "$content" "$content_type" "$source"
 
-	return 0
+	# Propagate scan result: 0=clean, 1=findings detected (with warning prepended)
+	# Callers can distinguish clean wrapping from wrapping-with-findings
+	return "$scan_exit"
 }
 
 # ============================================================
