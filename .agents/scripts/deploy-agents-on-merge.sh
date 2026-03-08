@@ -202,8 +202,6 @@ deploy_scripts_only() {
 		rsync -a --delete "$source_dir/" "$target_scripts_dir/"
 	else
 		# Fallback: tar-based copy
-		# Remove existing target contents first to match rsync --delete behavior
-		find "$target_scripts_dir" -mindepth 1 -delete 2>/dev/null || true
 		(cd "$source_dir" && tar cf - .) | (cd "$target_scripts_dir" && tar xf -)
 	fi
 
@@ -259,11 +257,6 @@ deploy_all_agents() {
 			rm -rf "$tmp_preserve"
 			return 1
 		fi
-
-		# Remove existing target contents (except custom/draft) to match rsync --delete behavior
-		find "$TARGET_DIR" -mindepth 1 -maxdepth 1 \
-			! -name 'custom' ! -name 'draft' ! -name 'loop-state' \
-			-exec rm -rf {} + 2>/dev/null || true
 
 		# Copy all agents
 		(cd "$source_dir" && tar cf - --exclude='loop-state' --exclude='custom' --exclude='draft' .) |
@@ -339,31 +332,19 @@ deploy_changed_files() {
 			target_parent=$(dirname "$target_file")
 			mkdir -p "$target_parent"
 
-			# Copy file (catch errors instead of letting set -e abort)
-			if ! cp "$source_file" "$target_file"; then
-				log_warn "Failed to copy: $rel_path"
-				failed=$((failed + 1))
-				continue
-			fi
+			# Copy file
+			cp "$source_file" "$target_file"
 
 			# Set executable if it's a script
 			if [[ "$target_file" == *.sh ]]; then
-				if ! chmod +x "$target_file"; then
-					log_warn "Failed to set executable: $rel_path"
-					failed=$((failed + 1))
-					continue
-				fi
+				chmod +x "$target_file"
 			fi
 
 			deployed=$((deployed + 1))
 		elif [[ ! -e "$source_file" ]]; then
 			# File was deleted in source — remove from target
 			if [[ -f "$target_file" ]]; then
-				if ! rm -f "$target_file"; then
-					log_warn "Failed to remove deleted file: $rel_path"
-					failed=$((failed + 1))
-					continue
-				fi
+				rm -f "$target_file"
 				log_info "Removed deleted file: $rel_path"
 			fi
 		fi
