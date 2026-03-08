@@ -261,14 +261,21 @@ cmd_label_stuck() {
 	local suggested_actions="$6"
 	local repo_slug="${7:-}"
 
-	if [[ -z "$issue_number" || -z "$milestone_min" || -z "$confidence" ]]; then
+	if [[ -z "$issue_number" || -z "$milestone_min" || -z "$elapsed_min" || -z "$confidence" ]]; then
 		_sd_log_error "usage: label-stuck <issue_number> <milestone_min> <elapsed_min> <confidence> <reasoning> <suggested_actions> [--repo <slug>]"
 		return 1
 	fi
 
+	# Validate numeric parameters before any side effects (GitHub ops, state mutations).
+	# milestone_min/elapsed_min are integers used in jq --argjson and comment interpolation.
+	# confidence is a float used in awk comparison — non-numeric strings cause
+	# lexicographic semantics (e.g., "high" >= "0.7" is true).
+	if ! [[ "$milestone_min" =~ ^[0-9]+$ ]] || ! [[ "$elapsed_min" =~ ^[0-9]+$ ]]; then
+		_sd_log_error "milestone_min and elapsed_min must be positive integers (got milestone=${milestone_min}, elapsed=${elapsed_min})"
+		return 1
+	fi
+
 	# Check confidence threshold
-	# Validate confidence and threshold are numeric to prevent string comparison
-	# semantics in awk (e.g., "high" >= "0.7" is true lexicographically)
 	local above_threshold
 	if ! [[ "$confidence" =~ ^([0-9]+([.][0-9]+)?|[.][0-9]+)$ ]] ||
 		! [[ "$STUCK_CONFIDENCE_THRESHOLD" =~ ^([0-9]+([.][0-9]+)?|[.][0-9]+)$ ]]; then
@@ -424,7 +431,7 @@ cmd_label_clear() {
 		--arg key "$issue_key" \
 		--arg issue "$issue_number" \
 		--arg repo "$repo_slug" \
-		'del(.milestones_checked[$key]) | .labeled_issues = [.labeled_issues[] | select(not (.issue == $issue and .repo == $repo))]') || true
+		'del(.milestones_checked[$key]) | .labeled_issues = [(.labeled_issues // [])[] | select((.issue == $issue and .repo == $repo) | not)]') || true
 	if [[ -n "$new_state" ]]; then
 		_sd_write_state "$new_state" || true
 	fi
