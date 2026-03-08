@@ -154,7 +154,7 @@ example_batch_processing() {
             print_warning "Failed to process: $url"
         fi
         
-        ((i++)) || true
+        ((++i)) || true
         sleep 1  # Rate limiting
     done
     
@@ -264,7 +264,7 @@ example_captcha_demo() {
             print_warning "CAPTCHA demo $i failed - this may be due to site changes or API limits"
         fi
 
-        ((i++)) || true
+        ((++i)) || true
 
         # Add delay between requests to respect rate limits
         if [[ $i -le ${#demo_configs[@]} ]]; then

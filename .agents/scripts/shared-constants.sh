@@ -211,7 +211,7 @@ timeout_sec() {
 				return 124
 			fi
 			sleep 0.5
-			((half_secs_remaining--)) || true
+			((--half_secs_remaining)) || true
 		done
 		wait "$cmd_pid" 2>/dev/null
 		return $?
@@ -980,7 +980,7 @@ prune_worktree_registry() {
 
 			if [[ "$should_prune" == "true" ]]; then
 				unregister_worktree "$wt_path"
-				((pruned_count++))
+				((++pruned_count))
 				[[ -n "${VERBOSE:-}" ]] && echo "  Pruned: $wt_path ($prune_reason)"
 			fi
 		done <<<"$entries"
