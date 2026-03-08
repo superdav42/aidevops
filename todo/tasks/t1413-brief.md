@@ -15,8 +15,8 @@ mode: subagent
 Add a **memory consolidation phase** to `memory-audit-pulse.sh` that uses a cheap LLM call (haiku-tier, ~$0.001/call) to scan unconsolidated memories, discover cross-cutting connections, and store synthesized insights as new `derives` relations in the existing `learning_relations` table.
 
 Deliverables:
-1. New `phase_consolidate()` function in `memory-audit-pulse.sh` (Phase 4; opportunity scan renumbered to Phase 5, report to Phase 6)
-2. New `insights` subcommand in `memory-helper.sh` for manual invocation (delegates to audit pulse with `--force`)
+1. New `phase_consolidate()` function in `memory-audit-pulse.sh` (Phase 4; opportunity scan renumbered to Phase 5, report to Phase 6).
+2. New `insights` subcommand in `memory-helper.sh` for manual invocation (delegates to audit pulse with `--force`).
 3. New `memory_consolidations` table for storing consolidation insights with source memory IDs
 4. Documentation updates in `memory/README.md`
 
