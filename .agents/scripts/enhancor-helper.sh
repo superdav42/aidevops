@@ -117,7 +117,10 @@ poll_status() {
 
 	while [[ ${elapsed} -lt ${timeout} ]]; do
 		local response
-		response=$(api_request POST "${api_path}/status" -d "{\"request_id\": \"${request_id}\"}")
+		if ! response=$(api_request POST "${api_path}/status" -d "{\"request_id\": \"${request_id}\"}"); then
+			print_error "Status poll failed for request: ${request_id}"
+			return 1
+		fi
 
 		status=$(echo "${response}" | jq -r '.status // empty' 2>/dev/null)
 
@@ -298,7 +301,9 @@ cmd_enhance() {
 	print_info "Submitting skin enhancement request..."
 
 	local response
-	response=$(api_request POST "/realistic-skin/v1/queue" -d "${body}")
+	if ! response=$(api_request POST "/realistic-skin/v1/queue" -d "${body}"); then
+		return 1
+	fi
 
 	# Check for errors
 	local error
@@ -397,7 +402,9 @@ cmd_upscale() {
 	print_info "Submitting upscale request (${mode} mode)..."
 
 	local response
-	response=$(api_request POST "/upscaler/v1/queue" -d "${body}")
+	if ! response=$(api_request POST "/upscaler/v1/queue" -d "${body}"); then
+		return 1
+	fi
 
 	local error
 	error=$(echo "${response}" | jq -r '.error // empty' 2>/dev/null)
@@ -490,7 +497,9 @@ cmd_upscale_general() {
 	print_info "Submitting general upscale request..."
 
 	local response
-	response=$(api_request POST "/general-upscaler/v1/queue" -d "${body}")
+	if ! response=$(api_request POST "/general-upscaler/v1/queue" -d "${body}"); then
+		return 1
+	fi
 
 	local error
 	error=$(echo "${response}" | jq -r '.error // empty' 2>/dev/null)
@@ -583,7 +592,9 @@ cmd_detailed() {
 	print_info "Submitting detailed enhancement request..."
 
 	local response
-	response=$(api_request POST "/detailed/v1/queue" -d "${body}")
+	if ! response=$(api_request POST "/detailed/v1/queue" -d "${body}"); then
+		return 1
+	fi
 
 	local error
 	error=$(echo "${response}" | jq -r '.error // empty' 2>/dev/null)
@@ -707,7 +718,9 @@ cmd_generate() {
 	print_info "Submitting generation request (${model})..."
 
 	local response
-	response=$(api_request POST "/kora/v1/queue" -d "${body}")
+	if ! response=$(api_request POST "/kora/v1/queue" -d "${body}"); then
+		return 1
+	fi
 
 	local error
 	error=$(echo "${response}" | jq -r '.error // empty' 2>/dev/null)
@@ -781,7 +794,9 @@ cmd_status() {
 	load_api_key || return 1
 
 	local response
-	response=$(api_request POST "${api_path}/status" -d "{\"request_id\": \"${request_id}\"}")
+	if ! response=$(api_request POST "${api_path}/status" -d "{\"request_id\": \"${request_id}\"}"); then
+		return 1
+	fi
 
 	echo "${response}" | jq . 2>/dev/null || echo "${response}"
 }
