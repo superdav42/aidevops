@@ -192,16 +192,31 @@ branch_was_pushed() {
 
 # Get the actual remote for a branch (GH#3797)
 # Returns the remote name (e.g., "origin", "fork", "upstream")
-# Falls back to "origin" if no upstream is configured
+# Resolves from tracking refs when no upstream is configured, to avoid
+# falsely defaulting to "origin" when the branch only exists on another remote.
+# Falls back to "origin" only if no remote ref is found at all.
 branch_remote() {
 	local branch="$1"
+	# 1. Explicit upstream config (most reliable)
 	local remote
 	remote=$(git config "branch.$branch.remote" 2>/dev/null || echo "")
 	if [[ -n "$remote" ]]; then
 		echo "$remote"
-	else
-		echo "origin"
+		return 0
 	fi
+	# 2. Resolve from remote tracking refs (handles multi-remote setups)
+	local ref_remote
+	ref_remote=$(git for-each-ref --format="%(refname)" "refs/remotes/*/$branch" 2>/dev/null | head -1)
+	if [[ -n "$ref_remote" ]]; then
+		# Extract remote name from refs/remotes/<remote>/<branch>
+		ref_remote="${ref_remote#refs/remotes/}"
+		ref_remote="${ref_remote%/"$branch"}"
+		echo "$ref_remote"
+		return 0
+	fi
+	# 3. Fallback to origin (branch may not have been pushed yet)
+	echo "origin"
+	return 0
 }
 
 # Check if a stale remote branch exists for a branch name (t1060)
@@ -724,8 +739,10 @@ cmd_clean() {
 	local default_branch
 	default_branch=$(get_default_branch)
 
-	# Fetch to get current remote branch state (detects deleted branches)
-	git fetch --prune origin 2>/dev/null || true
+	# Fetch all remotes to get current branch state (detects deleted branches).
+	# Using --all ensures branches on non-origin remotes (fork, upstream) are
+	# also pruned, preventing false "remote deleted" detection (GH#3833).
+	git fetch --prune --all 2>/dev/null || true
 
 	# Build a lookup of merged PR branches for squash-merge detection.
 	# gh pr list only returns squash-merged PRs that git branch --merged misses.
