@@ -526,17 +526,22 @@ loop_create_receipt() {
 	local commit_hash
 	commit_hash=$(git rev-parse --short HEAD 2>/dev/null || echo "none")
 
-	cat >"$receipt_file" <<EOF
-{
-  "type": "$receipt_type",
-  "id": "$task_id",
-  "iteration": $iteration,
-  "timestamp": "$timestamp",
-  "outcome": "$outcome",
-  "commit_hash": "$commit_hash",
-  "evidence": $evidence
-}
-EOF
+	# Validate evidence is valid JSON; default to empty object if not
+	if ! echo "$evidence" | jq empty >/dev/null 2>&1; then
+		evidence="{}"
+	fi
+
+	# Build receipt safely with jq to prevent JSON injection
+	jq -n \
+		--arg type "$receipt_type" \
+		--arg id "$task_id" \
+		--argjson iteration "$iteration" \
+		--arg timestamp "$timestamp" \
+		--arg outcome "$outcome" \
+		--arg commit_hash "$commit_hash" \
+		--argjson evidence "$evidence" \
+		'{type: $type, id: $id, iteration: $iteration, timestamp: $timestamp, outcome: $outcome, commit_hash: $commit_hash, evidence: $evidence}' \
+		>"$receipt_file"
 
 	# Add receipt to state (jq handles missing .receipts via // [])
 
