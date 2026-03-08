@@ -113,17 +113,21 @@ generate_supplier_instructions() {
 		return 0
 	fi
 
+	# JSON-escape supplier name for safe interpolation into instruction output
+	local escaped_name
+	escaped_name=$(printf '%s' "$supplier_name" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
 	echo "  1. Search for supplier:"
-	echo "     quickfile_supplier_search({ \"searchTerm\": \"${supplier_name}\" })"
+	echo "     quickfile_supplier_search({ \"searchTerm\": \"${escaped_name}\" })"
 	echo ""
 	echo "  2. If found: use the returned SupplierId"
 	echo "     If NOT found:"
 	if [[ "$auto_create" == "true" ]]; then
 		echo "     quickfile_supplier_create({"
-		echo "       \"companyName\": \"${supplier_name}\""
+		echo "       \"companyName\": \"${escaped_name}\""
 		echo "     })"
 	else
-		echo "     Ask user whether to create supplier \"${supplier_name}\" or map to existing"
+		echo "     Ask user whether to create supplier \"${escaped_name}\" or map to existing"
 	fi
 	return 0
 }
@@ -213,30 +217,21 @@ else:
         'vatPercentage': '20'
     })
 
-# Output the MCP call
-print('  quickfile_purchase_create({')
+# Build the MCP call payload safely using json.dumps
+payload = {}
 if supplier_id:
-    print(f'    \"supplierId\": \"{supplier_id}\",')
+    payload['supplierId'] = supplier_id
 else:
-    print(f'    \"supplierId\": \"<from supplier lookup>\",')
+    payload['supplierId'] = '<from supplier lookup>'
 if inv_ref:
-    print(f'    \"supplierRef\": \"{inv_ref}\",')
-print(f'    \"issueDate\": \"{inv_date}\",')
+    payload['supplierRef'] = inv_ref
+payload['issueDate'] = inv_date
 if due_date:
-    print(f'    \"dueDate\": \"{due_date}\",')
-print(f'    \"currency\": \"{currency}\",')
-print(f'    \"lines\": [')
-for i, line in enumerate(lines):
-    comma = ',' if i < len(lines) - 1 else ''
-    print(f'      {{')
-    print(f'        \"description\": \"{line[\"description\"]}\",')
-    print(f'        \"quantity\": {line[\"quantity\"]},')
-    print(f'        \"unitCost\": {line[\"unitCost\"]},')
-    print(f'        \"nominalCode\": \"{line[\"nominalCode\"]}\",')
-    print(f'        \"vatPercentage\": \"{line[\"vatPercentage\"]}\"')
-    print(f'      }}{comma}')
-print(f'    ]')
-print(f'  }})')
+    payload['dueDate'] = due_date
+payload['currency'] = currency
+payload['lines'] = lines
+
+print('  quickfile_purchase_create(' + json.dumps(payload, indent=4, ensure_ascii=False) + ')')
 print()
 print(f'  Summary: {supplier} | {inv_date} | {currency} {total:.2f} (net {subtotal:.2f} + VAT {vat:.2f})')
 " 2>/dev/null || {
