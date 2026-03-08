@@ -217,6 +217,33 @@ opencode run --attach http://localhost:4096 --title "Docs" \
 wait  # Wait for all to complete
 ```
 
+### Stagger Protection for Manual Dispatch (t1419)
+
+When dispatching multiple workers manually (outside the pulse supervisor), **stagger launches by 30-60 seconds** to avoid thundering herd resource contention. Simultaneous cold boots cause:
+
+- **RAM exhaustion**: Each worker spawns Node.js + language servers + MCP servers. 6 simultaneous startups can consume 6+ GB in the first 60 seconds.
+- **API rate limiting**: Multiple workers hitting the same API provider simultaneously trigger rate limits, causing buffering and eventual stalls.
+- **MCP cold boot storms**: MCP servers (especially Node-based ones) have expensive startup. Concurrent initialization competes for CPU and I/O.
+
+```bash
+# WRONG: Thundering herd — all 4 workers cold-boot simultaneously
+for issue in 42 43 44 45; do
+  opencode run --dir ~/Git/myproject --title "Issue #${issue}" \
+    "/full-loop Implement issue #${issue}" &
+done
+
+# RIGHT: Staggered launch — 30s between each worker
+for issue in 42 43 44 45; do
+  opencode run --dir ~/Git/myproject --title "Issue #${issue}" \
+    "/full-loop Implement issue #${issue}" &
+  sleep 30
+done
+```
+
+The pulse supervisor handles this automatically via its capacity calculation (`RAM_PER_WORKER_MB`, `RAM_RESERVE_MB`, `MAX_WORKERS_CAP`). Manual dispatch bypasses these checks.
+
+**Worker monitoring**: Use `worker-watchdog.sh --status` to check active workers, or install the launchd service (`worker-watchdog.sh --install`) for automatic detection and cleanup of hung/idle workers. See `scripts/worker-watchdog.sh` for details.
+
 ### SDK Parallel (Promise.all)
 
 ```typescript
