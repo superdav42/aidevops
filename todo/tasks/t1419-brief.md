@@ -1,45 +1,138 @@
-# t1419: Standalone Worker Watchdog
+# t1419: Contribution-watch — monitor external issues/PRs for new comments
 
-## Session Origin
+## Origin
 
-Interactive session. User manually dispatched 6 workers (pulse was disabled). 4 crashed/hung within 5 minutes (thundering herd on MCP cold boot). 1 buffered (API rate limiting). 1 kept working. A second interactive session later hung indefinitely. No automated cleanup existed outside the pulse supervisor.
+- **Created:** 2026-03-08
+- **Session:** claude-code:interactive
+- **Created by:** marcusquinn (human + ai-interactive)
+- **Conversation context:** User received a comment on an opencode issue (#12472) and asked about systematically monitoring external repos where we've contributed issues/PRs. Discussion covered discovery, polling intervals, reply discipline, and prompt injection safety.
 
 ## What
 
-Create `worker-watchdog.sh` — a standalone launchd service that automatically detects and kills hung/idle headless AI workers, then re-queues their GitHub issues for re-dispatch.
+A `contribution-watch` system that:
+1. Auto-discovers all issues/PRs authored by or commented on by `marcusquinn` across GitHub (using `gh api search/issues?q=commenter:marcusquinn` and `author:marcusquinn`)
+2. Tracks external repos in `repos.json` with a `"contributed": true` type (distinct from `"pulse": true`)
+3. Detects new comments on watched items since last check
+4. Surfaces items needing attention — only when someone else commented after our last comment (not a "reply guy" — skip items where we have the last word)
+5. Runs on an adaptive polling schedule (15min when hot, 1h default, 6h when dormant)
 
 ## Why
 
-The pulse supervisor (`pulse-wrapper.sh`) has a sophisticated 3-layer watchdog (wall-clock, CPU idle, progress stall) but ONLY for the pulse process itself. No monitoring exists for independently dispatched workers. When workers crash, hang, or enter the OpenCode idle-state bug, they sit indefinitely consuming resources and blocking issue re-dispatch. This is a systemic gap — the pulse's "Kill stuck workers" section is LLM guidance, not automated enforcement, and only fires when pulse is enabled.
+We have ~30 open items across ~15 external repos. Without monitoring, we miss responses to our feature requests, bug reports, and PRs — sometimes for weeks. The opencode #12472 comment that triggered this task sat for hours before we noticed it manually. Timely responses to maintainer feedback on our PRs/issues directly affects whether our contributions get merged.
 
-## How
+## How (Approach)
 
-Three deliverables:
+### 1. `contribution-watch-helper.sh`
 
-1. **`worker-lifecycle-common.sh`** — Extract shared process lifecycle functions from `pulse-wrapper.sh` (`_kill_tree`, `_force_kill_tree`, `_get_process_age`, `_get_pid_cpu`, `_get_process_tree_cpu`, `_sanitize_log_field`, `_sanitize_markdown`, `_validate_int`, `_compute_struggle_ratio`) into a shared library. Update `pulse-wrapper.sh` to source it.
+Core script with subcommands:
+- `scan` — query GitHub search API for items with activity since `last_seen`
+- `seed` — initial discovery of all external contributions, populate watch list
+- `status` — show watched items and their state
+- `install` / `uninstall` — launchd plist (`sh.aidevops.contribution-watch`)
 
-2. **`worker-watchdog.sh`** — Standalone watchdog with three detection signals:
-   - CPU idle: tree CPU < 5% for 5 minutes (catches OpenCode idle-state bug)
-   - Progress stall: no session messages for 10 minutes (catches API rate limiting, stuck workers)
-   - Runtime ceiling: 3-hour hard kill (prevents infinite loops)
-   On kill: posts GitHub issue comment, swaps labels (`status:in-progress` -> `status:available`), logs action.
-   CLI: `--check` (single scan), `--status` (show workers), `--install`/`--uninstall` (launchd plist).
+State file: `~/.aidevops/cache/contribution-watch.json`
+```json
+{
+  "last_scan": "ISO8601",
+  "items": {
+    "anomalyco/opencode#12472": {
+      "type": "issue",
+      "role": "commenter",
+      "last_our_comment": "2026-03-08T...",
+      "last_any_comment": "2026-03-08T...",
+      "last_notified": "2026-03-08T...",
+      "hot_until": "2026-03-09T..."
+    }
+  }
+}
+```
 
-3. **Stagger protection guidance** in `headless-dispatch.md` — Document the thundering herd problem and recommend 30-60s stagger for manual multi-worker dispatch.
+### 2. repos.json schema extension
+
+```json
+{
+  "slug": "anomalyco/opencode",
+  "contributed": true,
+  "pulse": false,
+  "path": null,
+  "watch": {
+    "issues": [12472, 14740, 13041, 7399, 5214, 16269],
+    "prs": [14741, 16271, 7271]
+  }
+}
+```
+
+### 3. Adaptive polling
+
+- Default: 1 hour
+- Hot (activity < 24h): 15 minutes
+- Dormant (no activity > 7 days): 6 hours
+- Cost: ~30-50 GitHub API calls/day total (negligible)
+
+### 4. Pulse integration
+
+Add a lightweight step to pulse-wrapper.sh (or separate launchd job) that:
+- Runs `contribution-watch-helper.sh scan`
+- Outputs summary to pulse log: "3 external items need attention"
+- Does NOT process comment bodies through LLM in the pulse context
+
+### 5. Prompt injection safety (CRITICAL)
+
+Architecture principle: **the automated system with privileges never processes untrusted content through an LLM. The system that processes untrusted content never has write privileges without human approval.**
+
+- The scanner is deterministic (timestamp comparison, authorship check) — no LLM involved
+- Comment bodies are NEVER fed into the pulse agent context
+- Responses happen only in interactive sessions where the user reviews content
+- Comment bodies go through `prompt-guard-helper.sh scan` before any LLM processing
+- If auto-response is ever added: sandboxed context, read-only token, human approval gate
 
 ## Acceptance Criteria
 
-- [ ] `worker-watchdog.sh --check` scans all headless opencode workers and applies three detection signals
-- [ ] `worker-watchdog.sh --status` shows active workers with CPU, runtime, idle/stall tracking, and struggle ratio
-- [ ] `worker-watchdog.sh --install` creates and loads a launchd plist at `sh.aidevops.worker-watchdog`
-- [ ] `worker-watchdog.sh --uninstall` removes the plist and cleans up state files
-- [ ] On kill: GitHub issue gets a comment explaining the reason and labels are swapped for re-dispatch
-- [ ] `pulse-wrapper.sh` sources `worker-lifecycle-common.sh` and no longer defines the extracted functions inline
-- [ ] ShellCheck passes on all new and modified scripts
-- [ ] `headless-dispatch.md` includes stagger protection guidance with correct/incorrect examples
+- [ ] `contribution-watch-helper.sh seed` discovers all external issues/PRs by `marcusquinn`
+  ```yaml
+  verify:
+    method: bash
+    run: "contribution-watch-helper.sh seed --dry-run 2>&1 | grep -q 'anomalyco/opencode'"
+  ```
+- [ ] `contribution-watch-helper.sh scan` detects new comments since last check
+- [ ] Items where we have the last word are excluded from "needs attention" output
+- [ ] Adaptive polling: hot (15min), default (1h), dormant (6h) based on activity recency
+- [ ] repos.json supports `"contributed": true` entries without `path` or `pulse`
+- [ ] Pulse integration surfaces count of items needing attention without processing comment bodies
+- [ ] Comment bodies are NEVER passed to LLM in automated/pulse context
+- [ ] `prompt-guard-helper.sh scan` is called before any LLM processes external comment content in interactive sessions
+- [ ] `contribution-watch-helper.sh install` creates launchd plist `sh.aidevops.contribution-watch`
+- [ ] ShellCheck passes on all new scripts
+- [ ] Lint clean
 
-## Context
+## Context & Decisions
 
-- GitHub issue: GH#3918
-- Branch: `feature/t1419-worker-watchdog`
-- Key reference files: `pulse-wrapper.sh` (lines 206-350, 714-792), `memory-pressure-monitor.sh` (launchd CLI pattern), `shared-constants.sh`
+- **Why not `pulse: true`?** The pulse merges PRs, dispatches workers, edits TODO.md — none of which applies to external repos. A distinct `contributed` type keeps the scope clean.
+- **Why not auto-respond?** Prompt injection risk. External comments are untrusted content. Auto-responding would require the privileged pulse agent to process attacker-controlled text. The safe architecture is: detect (automated) → review (human) → respond (human-supervised).
+- **Why adaptive polling?** Fixed intervals are either too frequent (wasteful for dormant items) or too slow (miss active conversations). The hot/default/dormant tiers match real conversation patterns.
+- **Reply discipline:** Not every comment warrants a response. The scanner flags items for attention; the human decides whether to reply. "Don't be a reply guy" is a design principle, not just social advice.
+- **ArtyMcLabin confusion:** Initial discovery incorrectly assumed ArtyMcLabin was the user's account. The correct GitHub username is `marcusquinn`. The seed command must use the authenticated user's login.
+
+## Relevant Files
+
+- `~/.config/aidevops/repos.json` — schema extension for `contributed` type
+- `~/.aidevops/agents/scripts/pulse-wrapper.sh` — integration point for scan step
+- `~/.aidevops/agents/scripts/pulse.md` — pulse documentation
+- `~/.aidevops/agents/tools/security/prompt-injection-defender.md` — injection defense patterns
+- `~/.aidevops/agents/scripts/prompt-guard-helper.sh` — content scanning
+- `~/.aidevops/cache/contribution-watch.json` — state file (new)
+
+## Dependencies
+
+- **Blocked by:** nothing
+- **Blocks:** nothing immediately, but enables timely response to external contributions
+- **External:** GitHub API (search endpoint, issue/PR comments endpoint)
+
+## Estimate Breakdown
+
+| Phase | Time | Notes |
+|-------|------|-------|
+| Research/read | 30m | Review repos.json schema, pulse integration points, prompt-guard |
+| Implementation | 3h | contribution-watch-helper.sh, repos.json schema, pulse integration |
+| Testing | 30m | seed, scan, adaptive polling, injection safety |
+| **Total** | **4h** | |
