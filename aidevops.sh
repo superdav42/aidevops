@@ -1206,6 +1206,201 @@ COCEOF
 	return 0
 }
 
+# Generate the Security section content based on project type (t1412.11)
+# Returns the content via stdout so callers can use it for create or update.
+_generate_security_section() {
+	local project_root="$1"
+
+	# Detect project type for security recommendations
+	local is_js_ts=false
+	if [[ -f "$project_root/package.json" ]]; then
+		is_js_ts=true
+	fi
+
+	cat <<'SECHEADER'
+## Security
+
+SECHEADER
+
+	if [[ "$is_js_ts" == "true" ]]; then
+		cat <<'SECEOF'
+### Prompt Injection Defense
+
+Any feature that processes untrusted content (tool outputs, user input, webhook
+payloads) and passes it to an LLM must defend against prompt injection. This is
+a JS/TS project — use `@stackone/defender` to sanitize untrusted tool results
+before they enter the LLM context:
+
+```bash
+npm install @stackone/defender
+```
+
+```typescript
+import { createPromptDefense } from '@stackone/defender';
+
+const defense = createPromptDefense({ enableTier2: true, blockHighRisk: true });
+
+// Sanitize untrusted tool output before adding to LLM context
+const result = await defense.defendToolResult(toolResponse, 'tool_name');
+if (!result.allowed) {
+  throw new Error('Blocked untrusted content');
+}
+const safeContent = result.sanitized;
+```
+
+For features that don't use LLMs but process untrusted text (webhooks, form
+submissions, API endpoints), validate and sanitize inputs at the boundary.
+
+### General Security Rules
+
+- Never log or expose API keys, tokens, or credentials in output
+- Store secrets via `aidevops secret set <NAME>` (gopass-encrypted) or
+  environment variables — never hardcode them in source
+- Use `<PLACEHOLDER>` values in code examples; note the secure storage location
+- Validate all external input (user input, webhook payloads, API responses)
+- Pin third-party GitHub Actions to SHA hashes, not branch tags
+- Run `aidevops security audit` periodically to check security posture
+- See `~/.aidevops/agents/tools/security/prompt-injection-defender.md` for
+  the framework's prompt injection defense patterns
+SECEOF
+	else
+		cat <<'SECEOF'
+### Prompt Injection Defense
+
+Any feature that passes untrusted content to an LLM — user input, tool outputs,
+retrieved documents, emails, tickets, or webhook payloads — must defend against
+prompt injection. Sanitize and validate that content before including it in
+prompts:
+
+- Strip or escape control characters and instruction-like patterns
+- Use structured prompt templates with clear system/user boundaries
+- Never concatenate raw external content directly into system prompts
+- Validate all externally sourced content (tool results, API responses, database
+  records) before inclusion in prompts
+- Consider allowlist-based input validation where possible
+
+### General Security Rules
+
+- Never log or expose API keys, tokens, or credentials in output
+- Store secrets via `aidevops secret set <NAME>` (gopass-encrypted) or
+  environment variables — never hardcode them in source
+- Use `<PLACEHOLDER>` values in code examples; note the secure storage location
+- Validate all external input (user input, webhook payloads, API responses)
+- Pin third-party GitHub Actions to SHA hashes, not branch tags
+- Run `aidevops security audit` periodically to check security posture
+- See `~/.aidevops/agents/tools/security/prompt-injection-defender.md` for
+  the framework's prompt injection defense patterns
+SECEOF
+	fi
+
+	return 0
+}
+
+# Scaffold .agents/AGENTS.md with context-aware Security section (t1412.11)
+# Idempotent: creates the file if missing, or updates the Security section
+# in an existing file (preserving all other custom content).
+scaffold_agents_md() {
+	local project_root="$1"
+	local agents_md="$project_root/.agents/AGENTS.md"
+
+	mkdir -p "$(dirname "$agents_md")"
+
+	if [[ -f "$agents_md" ]]; then
+		# File exists — update the Security section idempotently
+		_update_agents_md_security "$project_root"
+		return $?
+	fi
+
+	# File missing — create from scratch with base template + security
+	local security_content
+	security_content=$(_generate_security_section "$project_root")
+
+	cat >"$agents_md" <<'AGENTSEOF'
+# Agent Instructions
+
+This directory contains project-specific agent context. The [aidevops](https://aidevops.sh)
+framework is loaded separately via the global config (`~/.aidevops/agents/`).
+
+## Purpose
+
+Files in `.agents/` provide project-specific instructions that AI assistants
+read when working in this repository. Use this for:
+
+- Domain-specific conventions not covered by the framework
+- Project architecture decisions and patterns
+- API design rules, data models, naming conventions
+- Integration details (third-party services, deployment targets)
+
+## Adding Agents
+
+Create `.md` files in this directory for domain-specific context:
+
+```text
+.agents/
+  AGENTS.md              # This file - overview and index
+  api-patterns.md        # API design conventions
+  deployment.md          # Deployment procedures
+  data-model.md          # Database schema and relationships
+```
+
+Each file is read on demand by AI assistants when relevant to the task.
+
+AGENTSEOF
+
+	# Append the generated security section
+	printf '%s\n' "$security_content" >>"$agents_md"
+
+	return 0
+}
+
+# Update the Security section in an existing .agents/AGENTS.md (t1412.11)
+# Replaces everything from "## Security" to the next "## " heading (or EOF)
+# with the latest security guidance. Preserves all other content.
+_update_agents_md_security() {
+	local project_root="$1"
+	local agents_md="$project_root/.agents/AGENTS.md"
+	local tmp_file="${agents_md}.tmp.$$"
+
+	local security_content
+	security_content=$(_generate_security_section "$project_root")
+
+	local in_security=false
+	local has_security_section=false
+
+	# Process line by line: skip old Security section, insert new one
+	while IFS= read -r line || [[ -n "$line" ]]; do
+		# Match "## Security" exactly, with optional trailing whitespace
+		if [[ "$line" =~ ^'## Security'[[:space:]]*$ ]]; then
+			# Found the Security heading — replace it
+			in_security=true
+			has_security_section=true
+			printf '%s\n' "$security_content" >>"$tmp_file"
+			continue
+		fi
+
+		if [[ "$in_security" == "true" ]]; then
+			# Check if we've hit the next ## heading (end of Security section)
+			if [[ "$line" == "## "* ]]; then
+				in_security=false
+				printf '%s\n' "$line" >>"$tmp_file"
+			fi
+			# Skip lines within the old Security section
+			continue
+		fi
+
+		printf '%s\n' "$line" >>"$tmp_file"
+	done <"$agents_md"
+
+	if [[ "$has_security_section" == "false" ]]; then
+		# No existing Security section — append it
+		printf '\n%s\n' "$security_content" >>"$tmp_file"
+	fi
+
+	mv "$tmp_file" "$agents_md"
+
+	return 0
+}
+
 # Init command - initialize aidevops in a project
 cmd_init() {
 	local features="${1:-all}"
@@ -1317,6 +1512,7 @@ cmd_init() {
     "time_tracking": $enable_time_tracking,
     "database": $enable_database,
     "beads": $enable_beads,
+    "sops": $enable_sops,
     "security": $enable_security
   },
   "time_tracking": {
@@ -1331,16 +1527,15 @@ cmd_init() {
     "seeds_path": "seeds",
     "auto_generate_migration": true
   },
-    "beads": {
-      "enabled": $enable_beads,
-      "sync_on_commit": false,
-      "auto_ready_check": true
-    },
-    "sops": {
-      "enabled": $enable_sops,
-      "backend": "age",
-      "patterns": ["*.secret.yaml", "*.secret.json", "configs/*.enc.json", "configs/*.enc.yaml"]
-    }
+  "beads": {
+    "enabled": $enable_beads,
+    "sync_on_commit": false,
+    "auto_ready_check": true
+  },
+  "sops": {
+    "enabled": $enable_sops,
+    "backend": "age",
+    "patterns": ["*.secret.yaml", "*.secret.json", "configs/*.enc.json", "configs/*.enc.yaml"]
   },
   "plugins": []
 }
@@ -1399,38 +1594,14 @@ EOF
 		print_success "Created .agents/ directory"
 	fi
 
-	# Scaffold .agents/AGENTS.md if missing
-	if [[ ! -f "$project_root/.agents/AGENTS.md" ]]; then
-		cat >"$project_root/.agents/AGENTS.md" <<'AGENTSEOF'
-# Agent Instructions
-
-This directory contains project-specific agent context. The [aidevops](https://aidevops.sh)
-framework is loaded separately via the global config (`~/.aidevops/agents/`).
-
-## Purpose
-
-Files in `.agents/` provide project-specific instructions that AI assistants
-read when working in this repository. Use this for:
-
-- Domain-specific conventions not covered by the framework
-- Project architecture decisions and patterns
-- API design rules, data models, naming conventions
-- Integration details (third-party services, deployment targets)
-
-## Adding Agents
-
-Create `.md` files in this directory for domain-specific context:
-
-```text
-.agents/
-  AGENTS.md              # This file - overview and index
-  api-patterns.md        # API design conventions
-  deployment.md          # Deployment procedures
-  data-model.md          # Database schema and relationships
-```
-
-Each file is read on demand by AI assistants when relevant to the task.
-AGENTSEOF
+	# Scaffold or update .agents/AGENTS.md (idempotent — creates if missing,
+	# updates Security section if file already exists)
+	local _agents_md_existed=false
+	[[ -f "$project_root/.agents/AGENTS.md" ]] && _agents_md_existed=true
+	scaffold_agents_md "$project_root"
+	if [[ "$_agents_md_existed" == "true" ]]; then
+		print_success "Updated Security section in .agents/AGENTS.md"
+	else
 		print_success "Created .agents/AGENTS.md"
 	fi
 
