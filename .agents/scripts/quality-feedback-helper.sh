@@ -714,8 +714,23 @@ _scan_single_pr() {
 
 		select($sev_num >= $min_num) |
 
-		# Skip approval-only reviews with no substantive body
-		select(.state != "APPROVED" or (.body | length) > 100) |
+		# Filter out approving reviews with no actionable feedback (t1406).
+		# APPROVED reviews from bots often contain long summaries/walkthroughs
+		# that are purely positive — these should not create quality-debt issues.
+		# Keep the review only if: (a) not APPROVED, or (b) body contains
+		# actionable language (suggestions, warnings, bugs, fix proposals).
+		(if .state == "APPROVED" then
+			($body | test(
+				"\\bshould\\b|\\bconsider\\b|\\binstead\\b|\\bsuggest|\\brecommend|" +
+				"\\bwarning\\b|\\bcaution\\b|\\bavoid\\b|\\b(don ?'"'"'?t|do not)\\b|" +
+				"\\bvulnerab|\\binsecure|\\binjection\\b|\\bxss\\b|\\bcsrf\\b|" +
+				"\\bnit:|\\btodo:|\\bfixme|\\bhardcoded|\\bdeprecated|" +
+				"\\brace.condition|\\bdeadlock|\\bleak|\\boverflow|" +
+				"\\bworkaround\\b|\\bhack\\b|" +
+				"```\\s*(suggestion|diff)"; "i"))
+		 else true
+		 end) |
+		select(.) |
 
 		{
 			pr: ($pr | tonumber),
