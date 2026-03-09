@@ -656,6 +656,7 @@ cmd_enhance() {
 	# Create temporary files for pipeline
 	local temp_dir
 	temp_dir=$(mktemp -d)
+	trap 'rm -rf -- "$temp_dir"' RETURN
 	local temp_upscaled="${temp_dir}/upscaled.mp4"
 	local temp_interpolated="${temp_dir}/interpolated.mp4"
 

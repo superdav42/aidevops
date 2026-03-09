@@ -19,7 +19,9 @@ set -euo pipefail
 
 # --- Configuration ---
 
-SCRIPT_DIR="$(cd "${BASH_SOURCE[0]%/*}" && pwd)"
+_smp_dir="${BASH_SOURCE[0]%/*}"
+[[ "$_smp_dir" == "${BASH_SOURCE[0]}" ]] && _smp_dir="."
+SCRIPT_DIR="$(cd "$_smp_dir" && pwd)"
 MINER_DIR="${HOME}/.aidevops/.agent-workspace/work/session-miner"
 # Shipped with aidevops; copied to workspace on first run
 EXTRACTOR_SRC="${SCRIPT_DIR}/session-miner/extract.py"

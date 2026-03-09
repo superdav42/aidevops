@@ -2,7 +2,7 @@
   "name": "scripts",
   "version": "1.0.0",
   "description": "",
-  "main": "ahrefs-mcp-wrapper.js",
+  "main": "wappalyzer-detect.mjs",
   "directories": {
     "test": "tests"
   },

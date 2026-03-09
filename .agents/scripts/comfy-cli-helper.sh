@@ -111,6 +111,10 @@ cmd_setup() {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		--path)
+			if [[ $# -lt 2 ]]; then
+				log_error "--path requires a value"
+				return 1
+			fi
 			path="$2"
 			shift 2
 			;;
@@ -146,10 +150,18 @@ cmd_launch() {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		--port)
+			if [[ $# -lt 2 ]]; then
+				log_error "--port requires a value"
+				return 1
+			fi
 			port="$2"
 			shift 2
 			;;
 		--listen)
+			if [[ $# -lt 2 ]]; then
+				log_error "--listen requires a value"
+				return 1
+			fi
 			listen="$2"
 			shift 2
 			;;
@@ -239,6 +251,10 @@ cmd_snapshot_save() {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		--output)
+			if [[ $# -lt 2 ]]; then
+				log_error "--output requires a value"
+				return 1
+			fi
 			output="$2"
 			shift 2
 			;;

@@ -100,7 +100,7 @@ install_deps() {
 wappalyzer_detect() {
 	local url="$1"
 	local output_file="${2:-}"
-	local wrapper_script="$SCRIPT_DIR/wappalyzer-detect.js"
+	local wrapper_script="$SCRIPT_DIR/wappalyzer-detect.mjs"
 
 	if ! check_wappalyzer; then
 		print_error "Wappalyzer not installed. Run: $0 install"
@@ -112,6 +112,7 @@ wappalyzer_detect() {
 	# Run Wappalyzer wrapper script
 	local temp_output
 	temp_output=$(mktemp)
+	trap 'rm -f -- "$temp_output"' RETURN
 	local global_modules
 	global_modules="$(npm root -g)"
 

@@ -39,7 +39,7 @@ set -euo pipefail
 
 # Source shared constants (provides sed_inplace and other utilities)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
-source "$SCRIPT_DIR/shared-constants.sh" 2>/dev/null || true
+source "$SCRIPT_DIR/shared-constants.sh" || true
 
 # Fallback if shared-constants.sh not loaded
 if ! declare -f ensure_credentials_file &>/dev/null; then
