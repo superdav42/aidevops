@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- screen time shows 0h when launchd job lacks Knowledge DB access — falls back to accumulated history (#3997)
+- rename "Today" column to "24h" (rolling 24-hour window) in profile README stats tables
+
 ## [2.168.1] - 2026-03-09
 
 ### Added
