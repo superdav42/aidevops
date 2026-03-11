@@ -552,6 +552,29 @@ gh issue edit <number> --repo <slug> --add-assignee "$RUNNER_USER" --add-label "
 sleep 2
 ```
 
+### Dispatch candidate fallback (t1443)
+
+Do NOT treat `auto-dispatch` as a hard gate for worker dispatch. It is a hint, not a requirement.
+
+When the queue looks idle (`Workers: 0` or very low) but there is visible backlog, run this fallback before ending the cycle:
+
+1. Search for open issues in scoped repos that are not blocked/in-progress/review and have no active PR/worker.
+2. Prioritize `priority:critical`, `priority:high`, and `bug` labels first.
+3. If feature/bug candidates are scarce, include `quality-debt` items even when they do not carry `auto-dispatch` or `status:available` labels.
+4. Respect existing caps and safeguards (quality-debt concurrency cap, blast-radius guidance, stale-label recovery).
+
+Example discovery query:
+
+```bash
+gh issue list --repo <slug> --state open \
+  --search "(label:priority:critical OR label:priority:high OR label:bug OR label:quality-debt) -label:status:blocked -label:status:queued -label:status:in-progress -label:status:in-review" \
+  --limit 100
+```
+
+If you dispatch from this fallback path, add a short issue comment such as:
+
+"Dispatching via backlog fallback (t1443): high-priority work was pending without `auto-dispatch`/`status:available` labels."
+
 **Dispatch rules:**
 - ALWAYS use `~/.aidevops/agents/scripts/headless-runtime-helper.sh run` for headless dispatches — NEVER `claude`, `claude -p`, or raw `opencode run`
 - Background with `&`, sleep 2 between dispatches
