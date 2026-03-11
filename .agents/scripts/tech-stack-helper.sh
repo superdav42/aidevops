@@ -624,7 +624,27 @@ bq_reverse_lookup() {
 	local crawl_date="${6:-}"
 	local format="${7:-json}"
 
+	# Validate limit is a positive integer to prevent SQL injection
+	if ! [[ "$limit" =~ ^[0-9]+$ ]] || [[ "$limit" -le 0 ]]; then
+		print_warning "Invalid limit '$limit', using default"
+		limit="$DEFAULT_LIMIT"
+	fi
+
+	# Validate client is an expected value (allowlist)
+	case "$client" in
+	desktop | mobile) ;;
+	*)
+		print_warning "Unknown client '$client', using default"
+		client="$DEFAULT_CLIENT"
+		;;
+	esac
+
+	# Sanitize crawl_date (expected format: YYYY-MM-DD or YYYY-MM-01)
 	if [[ -z "$crawl_date" ]]; then
+		crawl_date=$(get_latest_crawl_date)
+	fi
+	if ! [[ "$crawl_date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+		print_warning "Invalid crawl_date format '$crawl_date', fetching latest"
 		crawl_date=$(get_latest_crawl_date)
 	fi
 
@@ -663,10 +683,12 @@ bq_reverse_lookup() {
 		local kw_conditions=""
 		local IFS=','
 		for kw in $keywords; do
-			kw=$(echo "$kw" | xargs)
-			# Sanitize: strip single quotes and backslashes to prevent SQL injection
-			kw="${kw//\'/}"
-			kw="${kw//\\/}"
+			kw=$(printf '%s' "$kw" | xargs)
+			# Sanitize via shared function (strips quotes, backslashes, semicolons)
+			kw=$(sanitize_sql_value "$kw")
+			# Additional LIKE-specific sanitization: escape % and _ wildcards in user input
+			kw="${kw//%/\\%}"
+			kw="${kw//_/\\_}"
 			if [[ -z "$kw" ]]; then
 				continue
 			fi
@@ -732,6 +754,11 @@ bq_tech_detections() {
 	technology=$(sanitize_sql_value "$1")
 	local limit="${2:-10}"
 	local format="${3:-json}"
+
+	# Validate limit is a positive integer
+	if ! [[ "$limit" =~ ^[0-9]+$ ]] || [[ "$limit" -le 0 ]]; then
+		limit=10
+	fi
 
 	local cache_key="detections_${technology}_${limit}"
 	local cache_file
@@ -890,6 +917,20 @@ bq_trending() {
 	local direction="${1:-adopted}"
 	local limit="${2:-20}"
 	local format="${3:-json}"
+
+	# Validate limit is a positive integer
+	if ! [[ "$limit" =~ ^[0-9]+$ ]] || [[ "$limit" -le 0 ]]; then
+		limit=20
+	fi
+
+	# Validate direction (allowlist)
+	case "$direction" in
+	adopted | deprecated) ;;
+	*)
+		print_warning "Unknown direction '$direction', using 'adopted'"
+		direction="adopted"
+		;;
+	esac
 
 	local cache_key="trending_${direction}_${limit}"
 	local cache_file

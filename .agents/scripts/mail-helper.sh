@@ -284,8 +284,8 @@ transport_simplex_send() {
 
 	# Prefer group delivery (broadcast to all agents in the group)
 	if [[ -n "$SIMPLEX_MAIL_GROUP" ]]; then
-		"$SIMPLEX_HELPER" send-group "$SIMPLEX_MAIL_GROUP" "$envelope" 2>/dev/null
-		local rc=$?
+		local rc=0
+		"$SIMPLEX_HELPER" send-group "$SIMPLEX_MAIL_GROUP" "$envelope" || rc=$?
 		if [[ $rc -eq 0 ]]; then
 			log_info "Relayed via SimpleX group: $SIMPLEX_MAIL_GROUP"
 			return 0
@@ -295,8 +295,8 @@ transport_simplex_send() {
 
 	# Fallback to direct contact
 	if [[ -n "$SIMPLEX_MAIL_CONTACT" ]]; then
-		"$SIMPLEX_HELPER" send "$SIMPLEX_MAIL_CONTACT" "$envelope" 2>/dev/null
-		local rc=$?
+		local rc=0
+		"$SIMPLEX_HELPER" send "$SIMPLEX_MAIL_CONTACT" "$envelope" || rc=$?
 		if [[ $rc -eq 0 ]]; then
 			log_info "Relayed via SimpleX contact: $SIMPLEX_MAIL_CONTACT"
 			return 0
@@ -349,12 +349,17 @@ transport_matrix_send() {
 	local json_body
 	json_body=$(jq -n --arg body "$envelope" '{msgtype: "m.text", body: $body}')
 
-	local http_code
-	http_code=$(curl -sf -o /dev/null -w '%{http_code}' \
+	local http_code curl_stderr
+	curl_stderr=$(mktemp) || curl_stderr="/dev/null"
+	http_code=$(curl -sS -o /dev/null -w '%{http_code}' \
 		-X PUT "$endpoint" \
 		-H "Authorization: Bearer $access_token" \
 		-H "Content-Type: application/json" \
-		-d "$json_body" 2>/dev/null) || http_code="000"
+		-d "$json_body" 2>"$curl_stderr") || http_code="000"
+	if [[ "$http_code" != "200" && -s "$curl_stderr" ]]; then
+		log_warn "Matrix curl error: $(cat "$curl_stderr")"
+	fi
+	rm -f "$curl_stderr"
 
 	if [[ "$http_code" == "200" ]]; then
 		log_info "Relayed via Matrix room: $MATRIX_MAIL_ROOM"
@@ -542,7 +547,10 @@ receive_simplex() {
 		fi
 
 		# Archive processed envelope
-		mv "$envelope_file" "${envelope_file}.processed" 2>/dev/null || rm -f "$envelope_file"
+		if ! mv "$envelope_file" "${envelope_file}.processed"; then
+			log_warn "Failed to archive envelope, removing: $envelope_file"
+			rm -f "$envelope_file"
+		fi
 	done
 
 	echo "$count"

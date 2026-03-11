@@ -451,6 +451,19 @@ _pg_policy_threshold() {
 	return 0
 }
 
+# Sanitize untrusted text for pipe-delimited output.
+# Replaces pipe chars and newlines to prevent delimiter injection.
+_pg_sanitize_delimited() {
+	local text="$1"
+	# Replace pipes with [PIPE] marker to prevent delimiter corruption
+	text="${text//|/[PIPE]}"
+	# Replace newlines with literal \n
+	text="${text//$'\n'/\\n}"
+	# Replace carriage returns
+	text="${text//$'\r'/\\r}"
+	printf '%s' "$text"
+}
+
 # Scan patterns from a pipe-delimited source against a message
 # Args: $1=message, reads patterns from stdin (severity|category|description|pattern)
 # Output: one line per match: severity|category|description|matched_text
@@ -466,6 +479,8 @@ _pg_scan_patterns_from_stream() {
 		if _pg_match "$pattern" "$message"; then
 			local matched_text
 			matched_text=$(_pg_extract_match "$pattern" "$message") || matched_text="[match]"
+			# Sanitize matched_text to prevent pipe delimiter injection from untrusted content
+			matched_text=$(_pg_sanitize_delimited "$matched_text")
 			echo "${severity}|${category}|${description}|${matched_text}"
 			_pg_scan_found=1
 		fi
@@ -482,7 +497,7 @@ _pg_scan_message() {
 
 	# Try YAML patterns first (comprehensive), fall back to inline (core set)
 	local yaml_patterns
-	yaml_patterns=$(_pg_load_yaml_patterns 2>/dev/null) || true
+	yaml_patterns=$(_pg_load_yaml_patterns) || true
 
 	if [[ -n "$yaml_patterns" ]]; then
 		_pg_scan_patterns_from_stream "$message" <<<"$yaml_patterns"
@@ -879,8 +894,10 @@ cmd_scan_stdin() {
 		return 1
 	fi
 
+	# Limit stdin to 10MB to prevent DoS via memory exhaustion from untrusted input
+	local max_bytes=$((10 * 1024 * 1024))
 	local content
-	if ! content=$(cat); then
+	if ! content=$(head -c "$max_bytes"); then
 		_pg_log_error "Failed to read from stdin"
 		return 1
 	fi
@@ -888,6 +905,12 @@ cmd_scan_stdin() {
 	if [[ -z "$content" ]]; then
 		_pg_log_error "No content received on stdin"
 		return 1
+	fi
+
+	local byte_count_check
+	byte_count_check=$(printf '%s' "$content" | wc -c | tr -d ' ')
+	if [[ "$byte_count_check" -ge "$max_bytes" ]]; then
+		_pg_log_warn "Input truncated at ${max_bytes} bytes — content may be incomplete"
 	fi
 
 	local byte_count
