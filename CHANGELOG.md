@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.171.8] - 2026-03-11
+
+### Fixed
+
+- scan explicit targets in secretlint preflight
+- stream secretlint output in patch preflight
+- auto-select working secretlint runtime for preflight
+- fail closed on secretlint runtime errors in preflight
+
 ## [2.171.7] - 2026-03-11
 
 ### Changed
