@@ -102,8 +102,8 @@ sha256_text() {
 		printf '%s' "$value" | sha256sum | awk '{print $1}'
 		return 0
 	fi
-	printf '%s' "$value"
-	return 0
+	print_error "sha256_text requires 'shasum' or 'sha256sum'"
+	return 1
 }
 
 file_mtime() {
@@ -346,7 +346,7 @@ provider_backoff_active() {
 	if [[ -n "$stored_retry_after" ]]; then
 		local now_epoch retry_epoch
 		now_epoch=$(date -u '+%s')
-		retry_epoch=$(date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$stored_retry_after" '+%s' 2>/dev/null || date -u -d "$stored_retry_after" '+%s' 2>/dev/null || printf '%s' "0")
+		retry_epoch=$(date -j -f '%Y-%m-%dT%H:%M:%SZ' "$stored_retry_after" '+%s' 2>/dev/null || date -u -d "$stored_retry_after" '+%s' 2>/dev/null || printf '%s' "0")
 		if [[ "$retry_epoch" -le "$now_epoch" ]]; then
 			clear_provider_backoff "$provider"
 			return 1
@@ -423,7 +423,7 @@ for line in Path(sys.argv[1]).read_text(errors="ignore").splitlines():
     except Exception:
         continue
     event_type = obj.get("type", "")
-    if event_type in {"text", "tool", "tool-invocation", "tool-result", "step-start", "step_finish", "step-finish", "reasoning"}:
+    if event_type in {"text", "tool", "tool-invocation", "tool-result", "step-start", "step_finish", "reasoning"}:
         activity = True
         break
 
@@ -548,6 +548,10 @@ cmd_backoff() {
 		printf 'manual backoff %s %s %s\n' "$provider" "$reason" "$retry_seconds" >"$tmp_file"
 		record_provider_backoff "$provider" "$reason" "$tmp_file"
 		if [[ "$retry_seconds" != "300" ]]; then
+			if [[ ! "$retry_seconds" =~ ^[0-9]+$ ]]; then
+				print_error "retry_seconds must be an integer"
+				return 1
+			fi
 			local retry_after
 			retry_after=$(date -u -v+"${retry_seconds}"S '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "+${retry_seconds} seconds" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || printf '%s' "")
 			db_query "UPDATE provider_backoff SET retry_after = '$(sql_escape "$retry_after")' WHERE provider = '$(sql_escape "$provider")';" >/dev/null

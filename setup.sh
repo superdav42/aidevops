@@ -104,6 +104,8 @@ _xml_escape() {
 # by cron's /bin/sh). Embedded single quotes are escaped via the '\'' idiom.
 _cron_escape() {
 	local str="$1"
+	str="${str//$'\n'/ }"
+	str="${str//$'\r'/ }"
 	# Replace each ' with '\'' (end quote, escaped quote, start quote)
 	str="${str//\'/\'\\\'\'}"
 	printf "'%s'" "$str"

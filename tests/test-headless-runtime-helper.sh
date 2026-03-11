@@ -106,6 +106,12 @@ else
 	fail "backed off anthropic is skipped" "got: $post_backoff_model"
 fi
 
+if bash "$HELPER" backoff set anthropic rate_limit '10;rm -rf /' >/dev/null 2>&1; then
+	fail "invalid retry_seconds is rejected" "helper accepted a non-numeric retry_seconds"
+else
+	pass "invalid retry_seconds is rejected"
+fi
+
 section "Auth Change Clears Backoff"
 export AIDEVOPS_HEADLESS_AUTH_SIGNATURE_OPENAI="sig-old"
 bash "$HELPER" backoff set openai auth_error 3600 >/dev/null
