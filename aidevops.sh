@@ -921,10 +921,15 @@ cmd_update() {
 			fi
 			[[ -z "$installed" ]] && continue
 
-			# Get latest version (npm or brew) — timeout prevents hangs on slow registries
+			# Get latest version (npm, brew, or GitHub API) — timeout prevents hangs on slow registries
 			if [[ "$pkg_ref" == brew:* ]]; then
 				local brew_pkg="${pkg_ref#brew:}"
-				latest=$(_timeout_cmd 30 brew info --json=v2 "$brew_pkg" | jq -r '.formulae[0].versions.stable // empty' || true)
+				if command -v brew &>/dev/null; then
+					latest=$(_timeout_cmd 30 brew info --json=v2 "$brew_pkg" | jq -r '.formulae[0].versions.stable // empty' || true)
+				elif [[ "$brew_pkg" == "gh" ]] && command -v gh &>/dev/null; then
+					# Fallback: get latest gh version from GitHub API (works without brew)
+					latest=$(_timeout_cmd 15 gh api repos/cli/cli/releases/latest --jq '.tag_name' 2>/dev/null | sed 's/^v//' || true)
+				fi
 			else
 				latest=$(_timeout_cmd 30 npm view "$pkg_ref" version || true)
 			fi
