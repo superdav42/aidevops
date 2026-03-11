@@ -56,9 +56,14 @@ source "${SCRIPT_DIR}/shared-constants.sh"
 source "${SCRIPT_DIR}/worker-lifecycle-common.sh"
 
 if ! type config_get >/dev/null 2>&1; then
+	CONFIG_GET_FALLBACK_WARNED=0
 	config_get() {
-		local _key="$1"
+		local requested_key="$1"
 		local default_value="$2"
+		if [[ "$CONFIG_GET_FALLBACK_WARNED" -eq 0 ]]; then
+			printf '[pulse-wrapper] WARN: fallback config_get active (config-helper unavailable); defaulting key "%s"\n' "$requested_key" >&2
+			CONFIG_GET_FALLBACK_WARNED=1
+		fi
 		printf '%s\n' "$default_value"
 		return 0
 	}
@@ -111,6 +116,7 @@ SESSION_COUNT_WARN=$(_validate_int SESSION_COUNT_WARN "$SESSION_COUNT_WARN" 5 1)
 
 PIDFILE="${HOME}/.aidevops/logs/pulse.pid"
 LOGFILE="${HOME}/.aidevops/logs/pulse.log"
+WRAPPER_LOGFILE="${HOME}/.aidevops/logs/pulse-wrapper.log"
 SESSION_FLAG="${HOME}/.aidevops/logs/pulse-session.flag"
 STOP_FLAG="${HOME}/.aidevops/logs/pulse-session.stop"
 OPENCODE_BIN="${OPENCODE_BIN:-$(command -v opencode 2>/dev/null || echo "opencode")}"
@@ -1273,7 +1279,7 @@ check_session_count() {
 run_pulse() {
 	local start_epoch
 	start_epoch=$(date +%s)
-	echo "[pulse-wrapper] Starting pulse at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$LOGFILE"
+	echo "[pulse-wrapper] Starting pulse at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$WRAPPER_LOGFILE"
 
 	# Build the prompt: /pulse + pre-fetched state
 	local prompt="/pulse"
