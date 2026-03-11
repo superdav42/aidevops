@@ -397,17 +397,26 @@ capture_secretlint_findings() {
 	local output_file="$2"
 	local canonical_scan_root=""
 	local raw_output=""
+	local secretlint_exit=0
 
 	canonical_scan_root=$(cd "$scan_root" && pwd -P)
 
 	raw_output=$(
 		cd "$canonical_scan_root" || exit 1
 		"${SECRETLINT_CMD[@]}" "**/*" --format compact 2>&1
-	) || true
+	)
+	secretlint_exit=$?
 
-	if [[ "$raw_output" == *"AggregationError"* ]] || [[ "$raw_output" == *"Failed to load rule module"* ]]; then
+	if [[ "$raw_output" == *"AggregationError"* ]] || [[ "$raw_output" == *"Failed to load rule module"* ]] || [[ "$raw_output" == *"at async file://"* ]]; then
 		print_error "Secretlint failed to load its configured rules"
 		return 1
+	fi
+
+	if [[ $secretlint_exit -ne 0 ]]; then
+		if ! printf '%s\n' "$raw_output" | grep -Eq ': line [0-9]+, col [0-9]+, '; then
+			print_error "Secretlint execution failed with non-finding output"
+			return 1
+		fi
 	fi
 
 	if [[ -z "$raw_output" ]]; then
