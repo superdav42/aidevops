@@ -1489,7 +1489,7 @@ ST_PLIST
 
 	# Profile README auto-update scheduled job.
 	# Only installed if user has a profile repo (priority: "profile") in repos.json.
-	# macOS: launchd plist (daily at 06:00) | Linux: cron (daily at 06:00)
+	# macOS: launchd plist (hourly) | Linux: cron (hourly)
 	if [[ -x "$pr_script" ]] && [[ "$has_profile_repo" == "true" ]]; then
 		mkdir -p "$HOME/.aidevops/.agent-workspace/logs"
 
@@ -1519,13 +1519,8 @@ ST_PLIST
 		<string>${_xml_pr_script}</string>
 		<string>update</string>
 	</array>
-	<key>StartCalendarInterval</key>
-	<dict>
-		<key>Hour</key>
-		<integer>6</integer>
-		<key>Minute</key>
-		<integer>0</integer>
-	</dict>
+	<key>StartInterval</key>
+	<integer>3600</integer>
 	<key>StandardOutPath</key>
 	<string>${_xml_pr_home}/.aidevops/.agent-workspace/logs/profile-readme-update.log</string>
 	<key>StandardErrorPath</key>
@@ -1552,20 +1547,20 @@ ST_PLIST
 PR_PLIST
 
 			if launchctl load "$pr_plist" 2>/dev/null; then
-				print_info "Profile README update enabled (launchd, daily at 06:00)"
+				print_info "Profile README update enabled (launchd, hourly)"
 			else
 				print_warning "Failed to load profile README update LaunchAgent"
 			fi
 		else
-			# Linux: cron entry (daily at 06:00)
+			# Linux: cron entry (hourly)
 			local _cron_pr_script
 			_cron_pr_script=$(_cron_escape "$pr_script")
 			(
 				crontab -l 2>/dev/null | grep -v 'aidevops: profile-readme-update'
-				echo "0 6 * * * /bin/bash ${_cron_pr_script} update >> \"\$HOME/.aidevops/.agent-workspace/logs/profile-readme-update.log\" 2>&1 # aidevops: profile-readme-update"
+				echo "0 * * * * /bin/bash ${_cron_pr_script} update >> \"\$HOME/.aidevops/.agent-workspace/logs/profile-readme-update.log\" 2>&1 # aidevops: profile-readme-update"
 			) | crontab - 2>/dev/null || true
 			if crontab -l 2>/dev/null | grep -qF "aidevops: profile-readme-update" 2>/dev/null; then
-				print_info "Profile README update enabled (cron, daily at 06:00)"
+				print_info "Profile README update enabled (cron, hourly)"
 			else
 				print_warning "Failed to install profile README update cron entry"
 			fi
