@@ -620,6 +620,84 @@ Fetches keywords from Google Search Console and Bing Webmaster Tools,
 combines and deduplicates results, enriches with volume/difficulty data.'
 fi
 
+# --- seo-fanout ---
+if should_generate "seo-fanout"; then
+	write_command "seo-fanout" \
+		"Run thematic query fan-out research for AI search coverage" \
+		'Read ~/.aidevops/agents/seo/query-fanout-research.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Produce thematic branches, prioritized sub-queries, a page coverage matrix, and a remediation backlog.'
+fi
+
+# --- seo-geo ---
+if should_generate "seo-geo"; then
+	write_command "seo-geo" \
+		"Run GEO strategy workflow for AI search visibility" \
+		'Read ~/.aidevops/agents/seo/geo-strategy.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables: decision-criteria matrix, page-level coverage map, and prioritized retrieval-first improvements.'
+fi
+
+# --- seo-sro ---
+if should_generate "seo-sro"; then
+	write_command "seo-sro" \
+		"Run Selection Rate Optimization workflow for grounding snippets" \
+		'Read ~/.aidevops/agents/seo/sro-grounding.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables: baseline snippet behavior, sentence/structure SRO fixes, and controlled re-test plan.'
+fi
+
+# --- seo-hallucination-defense ---
+if should_generate "seo-hallucination-defense"; then
+	write_command "seo-hallucination-defense" \
+		"Audit and reduce AI brand hallucination risk" \
+		'Read ~/.aidevops/agents/seo/ai-hallucination-defense.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables: critical fact inventory, contradiction report, and claim-evidence remediation priorities.'
+fi
+
+# --- seo-agent-discovery ---
+if should_generate "seo-agent-discovery"; then
+	write_command "seo-agent-discovery" \
+		"Test AI agent discoverability across multi-turn tasks" \
+		'Read ~/.aidevops/agents/seo/ai-agent-discovery.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables: discovery diagnostics, failure classification, and prioritized remediation.'
+fi
+
+# --- seo-ai-readiness ---
+if should_generate "seo-ai-readiness"; then
+	write_command "seo-ai-readiness" \
+		"Run end-to-end AI search readiness workflow" \
+		'Read ~/.aidevops/agents/seo/ai-search-readiness.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Run chained phases: fan-out decomposition, GEO criteria alignment, SRO snippet optimization, hallucination defense, and agent discoverability validation.'
+fi
+
+# --- seo-ai-baseline ---
+if should_generate "seo-ai-baseline"; then
+	write_command "seo-ai-baseline" \
+		"Capture AI-search baseline metrics and output KPI scorecard" \
+		'Read ~/.aidevops/agents/seo/ai-search-readiness.md and follow its instructions.
+Read ~/.aidevops/agents/seo/ai-search-kpi-template.md and use its structure.
+
+Target: $ARGUMENTS
+
+Return a completed KPI baseline scorecard plus top remediation priorities and re-test cadence.'
+fi
+
 # --- onboarding ---
 if should_generate "onboarding"; then
 	write_command "onboarding" \

@@ -826,6 +826,112 @@ keyword-research-helper.sh webmaster https://example.com --days 90 --no-enrich
 4. Compare Google vs Bing performance
 BODY
 
+# --- SEO Fan-Out ---
+create_command "seo-fanout" \
+	"Run thematic query fan-out research for AI search coverage" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/query-fanout-research.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Produce:
+1. Thematic branch map for the target intent set
+2. Prioritized sub-query list
+3. Coverage matrix against existing pages
+4. Remediation backlog for partial/missing high-priority branches
+BODY
+
+# --- SEO GEO ---
+create_command "seo-geo" \
+	"Run GEO strategy workflow for AI search visibility" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/geo-strategy.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables:
+1. Decision-criteria matrix
+2. Page-level strong/partial/missing coverage map
+3. Prioritized retrieval-first implementation plan
+BODY
+
+# --- SEO SRO ---
+create_command "seo-sro" \
+	"Run Selection Rate Optimization workflow for grounding snippets" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/sro-grounding.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables:
+1. Baseline snippet behavior summary
+2. Sentence/structure-level SRO fixes
+3. Controlled re-test plan with expected deltas
+BODY
+
+# --- SEO Hallucination Defense ---
+create_command "seo-hallucination-defense" \
+	"Audit and reduce AI brand hallucination risk" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/ai-hallucination-defense.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables:
+1. Critical fact inventory and canonical source map
+2. Contradiction report with severities
+3. Claim-evidence matrix and remediation priorities
+BODY
+
+# --- SEO Agent Discovery ---
+create_command "seo-agent-discovery" \
+	"Test AI agent discoverability across multi-turn tasks" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/ai-agent-discovery.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Deliverables:
+1. Discovery task completion diagnostics
+2. Failure classification (missing content vs discoverability vs comprehension)
+3. Prioritized remediation and re-test scorecard
+BODY
+
+# --- SEO AI Readiness ---
+create_command "seo-ai-readiness" \
+	"Run end-to-end AI search readiness workflow" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/ai-search-readiness.md and follow its instructions.
+
+Target: $ARGUMENTS
+
+Run chained phases:
+1. Fan-out decomposition
+2. GEO criteria alignment
+3. SRO snippet optimization
+4. Hallucination defense
+5. Agent discoverability validation
+
+Return one prioritized backlog with readiness scorecard deltas.
+BODY
+
+# --- SEO AI Baseline ---
+create_command "seo-ai-baseline" \
+	"Capture AI-search baseline metrics and output KPI scorecard" \
+	"$AGENT_SEO" "" <<'BODY'
+Read ~/.aidevops/agents/seo/ai-search-readiness.md and follow its instructions.
+Read ~/.aidevops/agents/seo/ai-search-kpi-template.md and follow its format.
+
+Target: $ARGUMENTS
+
+Run baseline checks for fan-out, GEO, SRO, integrity, and discoverability.
+
+Return:
+1. Completed KPI scorecard baseline
+2. Top 3 remediation priorities
+3. Re-test schedule recommendation
+BODY
+
 # --- Onboarding ---
 create_command "onboarding" \
 	"Interactive onboarding wizard - discover services, configure integrations" \
@@ -1280,6 +1386,13 @@ echo "    /keyword-research - Seed keyword expansion"
 echo "    /autocomplete-research - Google autocomplete long-tails"
 echo "    /keyword-research-extended - Full SERP analysis with weakness detection"
 echo "    /webmaster-keywords - Keywords from GSC + Bing for your sites"
+echo "    /seo-fanout       - Thematic sub-query fan-out planning"
+echo "    /seo-geo          - GEO criteria and coverage strategy"
+echo "    /seo-sro          - SRO grounding snippet optimization"
+echo "    /seo-hallucination-defense - Fact consistency and claim-evidence audit"
+echo "    /seo-agent-discovery - Multi-turn AI discoverability diagnostics"
+echo "    /seo-ai-readiness - End-to-end AI search readiness workflow"
+echo "    /seo-ai-baseline  - Baseline KPI scorecard generation"
 echo ""
 echo "  Utilities:"
 echo "    /onboarding       - Interactive setup wizard (START HERE for new users)"
@@ -1311,5 +1424,7 @@ echo "New work: discuss -> /save-todo -> later: /list-todo -> pick -> implement"
 echo "Quality workflow: /preflight-loop -> /create-pr -> /pr-loop -> /postflight-loop"
 echo "Ralph workflow: tag task #ralph -> /ralph-task t042 -> autonomous completion"
 echo "SEO workflow: /keyword-research -> /autocomplete-research -> /keyword-research-extended"
+echo "AI-baseline workflow: /seo-ai-baseline -> /seo-ai-readiness"
+echo "AI-search workflow: /seo-fanout -> /seo-geo -> /seo-sro -> /seo-hallucination-defense -> /seo-agent-discovery"
 echo ""
 echo "Restart OpenCode to load new commands."
