@@ -896,31 +896,47 @@ cmd_scan_stdin() {
 
 	# Limit stdin to 10MB to prevent DoS via memory exhaustion from untrusted input
 	local max_bytes=$((10 * 1024 * 1024))
-	local content
-	if ! content=$(head -c "$max_bytes"); then
+	local tmp_file
+	tmp_file=$(mktemp) || {
+		_pg_log_error "Failed to create temp file for stdin buffering"
+		return 1
+	}
+	# Read stdin into temp file with size cap; use trap to ensure cleanup
+	# shellcheck disable=SC2064
+	trap "rm -f '$tmp_file'" RETURN
+	if ! head -c "$max_bytes" >"$tmp_file"; then
 		_pg_log_error "Failed to read from stdin"
 		return 1
 	fi
+
+	local content
+	content=$(cat "$tmp_file")
 
 	if [[ -z "$content" ]]; then
 		_pg_log_error "No content received on stdin"
 		return 1
 	fi
 
-	local byte_count_check
-	byte_count_check=$(printf '%s' "$content" | wc -c | tr -d ' ')
-	if [[ "$byte_count_check" -ge "$max_bytes" ]]; then
-		_pg_log_warn "Input truncated at ${max_bytes} bytes — content may be incomplete"
-	fi
-
+	# Use the temp file's true byte size (not command-substitution output, which
+	# strips trailing newlines) to reliably detect truncation
 	local byte_count
-	byte_count=$(printf '%s' "$content" | wc -c | tr -d ' ')
+	byte_count=$(wc -c <"$tmp_file" | tr -d ' ')
+	local truncated=false
+	if [[ "$byte_count" -ge "$max_bytes" ]]; then
+		_pg_log_warn "Input truncated at ${max_bytes} bytes — content may be incomplete"
+		truncated=true
+	fi
 	_pg_log_info "Scanning stdin content ($byte_count bytes)"
 
 	local results
 	results=$(_pg_scan_message "$content") || true
 
 	if [[ -z "$results" ]]; then
+		if [[ "$truncated" == "true" ]]; then
+			_pg_log_warn "No patterns detected, but input was truncated — scan may be incomplete"
+			echo "TRUNCATED"
+			return 2
+		fi
 		_pg_log_success "No injection patterns detected in stdin content"
 		echo "CLEAN"
 		return 0

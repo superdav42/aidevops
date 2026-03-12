@@ -348,7 +348,7 @@ _is_app_process() {
 	# are installed with a dot-prefixed wrapper name
 	cmd_name="${cmd_name#.}"
 	# Case-insensitive fixed-string match against the app process list
-	# Uses grep -ixF for O(1) lookup instead of per-item tr in a loop
+	# Single grep invocation avoids per-item tr subshells in a loop
 	printf '%s\n' "${APP_PROCESS_NAMES[@]}" | grep -qixF -- "$cmd_name"
 }
 

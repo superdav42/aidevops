@@ -640,11 +640,10 @@ bq_reverse_lookup() {
 	esac
 
 	# Sanitize crawl_date (expected format: YYYY-MM-DD or YYYY-MM-01)
-	if [[ -z "$crawl_date" ]]; then
-		crawl_date=$(get_latest_crawl_date)
-	fi
 	if ! [[ "$crawl_date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-		print_warning "Invalid crawl_date format '$crawl_date', fetching latest"
+		if [[ -n "$crawl_date" ]]; then
+			print_warning "Invalid crawl_date format '$crawl_date', fetching latest"
+		fi
 		crawl_date=$(get_latest_crawl_date)
 	fi
 
@@ -923,9 +922,10 @@ bq_trending() {
 		limit=20
 	fi
 
-	# Validate direction (allowlist)
+	# Validate direction (allowlist) — includes aliases growing/declining
 	case "$direction" in
-	adopted | deprecated) ;;
+	adopted | growing) direction="adopted" ;;
+	deprecated | declining) direction="deprecated" ;;
 	*)
 		print_warning "Unknown direction '$direction', using 'adopted'"
 		direction="adopted"
@@ -946,9 +946,8 @@ bq_trending() {
 
 	local order_col
 	case "$direction" in
-	adopted | growing) order_col="total_origins_adopted_new" ;;
-	deprecated | declining) order_col="total_origins_deprecated_existing" ;;
-	*) order_col="total_origins_adopted_new" ;;
+	adopted) order_col="total_origins_adopted_new" ;;
+	deprecated) order_col="total_origins_deprecated_existing" ;;
 	esac
 
 	local query

@@ -282,9 +282,11 @@ transport_simplex_send() {
 		return 1
 	fi
 
+	local rc=0
+
 	# Prefer group delivery (broadcast to all agents in the group)
 	if [[ -n "$SIMPLEX_MAIL_GROUP" ]]; then
-		local rc=0
+		rc=0
 		"$SIMPLEX_HELPER" send-group "$SIMPLEX_MAIL_GROUP" "$envelope" || rc=$?
 		if [[ $rc -eq 0 ]]; then
 			log_info "Relayed via SimpleX group: $SIMPLEX_MAIL_GROUP"
@@ -295,7 +297,7 @@ transport_simplex_send() {
 
 	# Fallback to direct contact
 	if [[ -n "$SIMPLEX_MAIL_CONTACT" ]]; then
-		local rc=0
+		rc=0
 		"$SIMPLEX_HELPER" send "$SIMPLEX_MAIL_CONTACT" "$envelope" || rc=$?
 		if [[ $rc -eq 0 ]]; then
 			log_info "Relayed via SimpleX contact: $SIMPLEX_MAIL_CONTACT"
@@ -357,7 +359,7 @@ transport_matrix_send() {
 		-H "Content-Type: application/json" \
 		-d "$json_body" 2>"$curl_stderr") || http_code="000"
 	if [[ "$http_code" != "200" && -s "$curl_stderr" ]]; then
-		log_warn "Matrix curl error: $(cat "$curl_stderr")"
+		log_warn "Matrix curl error to endpoint $endpoint: $(cat "$curl_stderr")"
 	fi
 	rm -f "$curl_stderr"
 
@@ -551,8 +553,10 @@ receive_simplex() {
 		fi
 
 		# Archive processed envelope (only reached if ingestion succeeded)
-		if ! mv "$envelope_file" "${envelope_file}.processed"; then
-			log_warn "Failed to archive envelope, removing: $envelope_file"
+		local archive_rc=0
+		mv "$envelope_file" "${envelope_file}.processed" || archive_rc=$?
+		if [[ $archive_rc -ne 0 ]]; then
+			log_warn "Failed to archive envelope (rc=$archive_rc), removing: $envelope_file"
 			rm -f "$envelope_file"
 		fi
 	done
