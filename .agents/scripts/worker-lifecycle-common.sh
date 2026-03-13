@@ -48,11 +48,36 @@ _extract_session_title() {
 	local cmd="$1"
 	local session_title=""
 
-	if [[ "$cmd" =~ --title[[:space:]]+\"([^\"]+)\" ]] || [[ "$cmd" =~ --title[[:space:]]+([^[:space:]]+) ]]; then
-		session_title="${BASH_REMATCH[1]}"
-	fi
+	session_title=$(
+		SESSION_CMD="$cmd" python3 - <<'PY'
+import os
+import shlex
 
-	printf '%s' "$session_title"
+cmd = os.environ.get("SESSION_CMD", "")
+title = ""
+
+try:
+    tokens = shlex.split(cmd)
+except Exception:
+    tokens = cmd.split()
+
+for idx, token in enumerate(tokens):
+    if token == "--title" and idx + 1 < len(tokens):
+        collected = []
+        for next_token in tokens[idx + 1 :]:
+            if next_token.startswith("--"):
+                break
+            if next_token == "/full-loop":
+                break
+            collected.append(next_token)
+        title = " ".join(collected).strip()
+        break
+
+print(title)
+PY
+	)
+
+	printf '%s' "${session_title:-}"
 	return 0
 }
 
@@ -147,7 +172,7 @@ try:
         SELECT COUNT(*)
         FROM message
         WHERE session_id = ?
-          AND time_created > strftime('%s', 'now') - ?
+          AND (CASE WHEN time_created > 20000000000 THEN time_created / 1000 ELSE time_created END) > strftime('%s', 'now') - ?
         """,
         (session_id, timeout_seconds),
     )
@@ -385,15 +410,58 @@ _get_process_tree_cpu() {
 #######################################
 _extract_session_title_from_cmd() {
 	local cmd="$1"
-	local session_title=""
+	_extract_session_title "$cmd"
+	return 0
+}
 
-	if [[ "$cmd" =~ --title[[:space:]]+\"([^\"]+)\" ]]; then
-		session_title="${BASH_REMATCH[1]}"
-	elif [[ "$cmd" =~ --title[[:space:]]+([^[:space:]]+) ]]; then
-		session_title="${BASH_REMATCH[1]}"
+#######################################
+# Resolve OpenCode session ID from a worker command line
+# Arguments:
+#   $1 - command line string
+# Returns: session id via stdout, or empty string
+#######################################
+_resolve_session_id_from_cmd() {
+	local cmd="$1"
+	local db_path
+	db_path=$(_opencode_db_path)
+	local session_id=""
+
+	if [[ "$cmd" =~ --session[[:space:]]+([^[:space:]]+) ]] || [[ "$cmd" =~ --session=([^[:space:]]+) ]]; then
+		session_id="${BASH_REMATCH[1]}"
+		printf '%s' "$session_id"
+		return 0
 	fi
 
-	printf '%s' "$session_title"
+	[[ -f "$db_path" ]] || {
+		printf '%s' ""
+		return 0
+	}
+
+	local session_title
+	session_title=$(_extract_session_title_from_cmd "$cmd")
+	[[ -n "$session_title" ]] || {
+		printf '%s' ""
+		return 0
+	}
+
+	session_id=$(
+		DB_PATH="$db_path" TITLE="$session_title" python3 - <<'PY'
+import os, sqlite3
+db = os.environ["DB_PATH"]
+title = os.environ["TITLE"]
+conn = sqlite3.connect(db)
+conn.execute("PRAGMA busy_timeout=5000")
+cur = conn.cursor()
+cur.execute("SELECT id FROM session WHERE title = ? ORDER BY time_created DESC LIMIT 1", (title,))
+row = cur.fetchone()
+if not row:
+    cur.execute("SELECT id FROM session WHERE title LIKE ? ORDER BY time_created DESC LIMIT 1", (f"%{title}%",))
+    row = cur.fetchone()
+print(row[0] if row else "")
+PY
+	) 2>/dev/null || session_id=""
+
+	printf '%s' "$session_id"
 	return 0
 }
 
@@ -420,15 +488,23 @@ _count_recent_opencode_messages() {
 		return 0
 	fi
 
-	local escaped_match="${session_match//\'/\'\'}"
 	local recent_count
-	recent_count=$(sqlite3 "$db_path" "
-		SELECT COUNT(*)
-		FROM message m
-		JOIN session s ON m.session_id = s.id
-		WHERE s.title LIKE '%${escaped_match}%'
-		AND m.time_created >= strftime('%s', 'now') - ${recent_window}
-	" 2>/dev/null || printf '%s' "0")
+	recent_count=$(
+		DB_PATH="$db_path" MATCH="$session_match" WINDOW="$recent_window" python3 - <<'PY'
+import os, sqlite3
+conn = sqlite3.connect(os.environ["DB_PATH"])
+conn.execute("PRAGMA busy_timeout=5000")
+cur = conn.cursor()
+cur.execute(
+    "SELECT COUNT(*) FROM message m JOIN session s ON m.session_id = s.id"
+    " WHERE s.title LIKE ?"
+    " AND (CASE WHEN m.time_created > 20000000000 THEN m.time_created / 1000 ELSE m.time_created END)"
+    " >= strftime('%s', 'now') - ?",
+    (f"%{os.environ['MATCH']}%", int(os.environ["WINDOW"])),
+)
+print(cur.fetchone()[0] or 0)
+PY
+	) 2>/dev/null || recent_count=0
 	[[ "$recent_count" =~ ^[0-9]+$ ]] || recent_count=0
 
 	printf '%s' "$recent_count"
@@ -633,22 +709,26 @@ _compute_struggle_ratio() {
 	local db_path="${HOME}/.local/share/opencode/opencode.db"
 
 	if [[ -f "$db_path" ]]; then
-		local session_title=""
-		session_title=$(_extract_session_title_from_cmd "$cmd")
+		local session_id
+		session_id=$(_resolve_session_id_from_cmd "$cmd")
 
-		if [[ -n "$session_title" ]]; then
-			# Query message count for the most recent session matching this title
-			# Use sqlite3 with a LIKE match on session title
-			local escaped_title="${session_title//\'/\'\'}"
-			# Use (cmd || echo 0) pattern for set -e safety — ensures the
-			# assignment always succeeds and stderr remains visible (GH#4010)
-			messages=$(sqlite3 "$db_path" "
-				SELECT COUNT(*)
-				FROM message m
-				JOIN session s ON m.session_id = s.id
-				WHERE s.title LIKE '%${escaped_title}%'
-				AND s.time_created > strftime('%s', 'now') - ${elapsed_seconds}
-			" || echo 0)
+		if [[ -n "$session_id" ]]; then
+			messages=$(
+				DB_PATH="$db_path" SID="$session_id" ELAPSED="$elapsed_seconds" python3 - <<'PY'
+import os, sqlite3
+conn = sqlite3.connect(os.environ["DB_PATH"])
+conn.execute("PRAGMA busy_timeout=5000")
+cur = conn.cursor()
+cur.execute(
+    "SELECT COUNT(*) FROM message m"
+    " WHERE m.session_id = ?"
+    " AND (CASE WHEN m.time_created > 20000000000 THEN m.time_created / 1000 ELSE m.time_created END)"
+    " > strftime('%s', 'now') - ?",
+    (os.environ["SID"], int(os.environ["ELAPSED"])),
+)
+print(cur.fetchone()[0] or 0)
+PY
+			) 2>/dev/null || messages=0
 		fi
 	fi
 
