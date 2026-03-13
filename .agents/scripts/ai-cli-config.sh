@@ -205,7 +205,7 @@ configure_openapi_search_mcp() {
 	# Continue.dev — ~/.continue/config.json (array-based mcpServers)
 	# -------------------------------------------------------------------------
 	local continue_config="$HOME/.continue/config.json"
-	if [[ -d "$HOME/.continue" ]] || command -v continue >/dev/null 2>&1; then
+	if [[ -d "$HOME/.continue" ]]; then
 		print_info "Configuring OpenAPI Search for Continue.dev..."
 		mkdir -p "$HOME/.continue"
 		local continue_entry
