@@ -113,7 +113,7 @@ base64 -i screenshot.png | \
 
 **Image token costs**: Images are resized and tiled. A 1024x1024 image uses ~765 tokens. Larger images use more tiles. Use `detail: "low"` for cheaper analysis (~85 tokens per image).
 
-**Image size limits**: API limits vary by endpoint — the 20MB figure applies to ChatGPT web uploads, not the API. For the Chat Completions API (vision), images are auto-resized: short side scaled to 768px for `high` detail, or 512px for `low` detail. Large images increase token cost without improving accuracy. Refer to the [OpenAI vision API docs](https://platform.openai.com/docs/guides/vision) for current endpoint-specific limits.
+**Image size limits**: API limits vary by endpoint. For the Chat Completions API (vision), images are auto-resized: short side scaled to 768px for `high` detail, or 512px for `low` detail. The hard pixel cap is 8000×8000 px (≈64 megapixels). Large images increase token cost without improving accuracy. Refer to the [OpenAI vision API docs](https://platform.openai.com/docs/guides/vision) for current endpoint-specific limits and payload size constraints.
 
 ### Anthropic (Claude Vision)
 
