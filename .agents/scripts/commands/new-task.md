@@ -28,12 +28,12 @@ Run the wrapper function or script directly, passing the title via an environmen
 
 ```bash
 # Via planning-commit-helper.sh wrapper (preferred)
-# Pass title as env var — never interpolate user input directly into the command string
+# Assign user input to a variable first — never interpolate it directly into the command string
 TASK_TITLE="<sanitized title from user input>"
-output=$(TASK_TITLE="$TASK_TITLE" ~/.aidevops/agents/scripts/planning-commit-helper.sh next-id --title "$TASK_TITLE")
+output=$(~/.aidevops/agents/scripts/planning-commit-helper.sh next-id --title "$TASK_TITLE")
 
 # Or directly via claim-task-id.sh
-output=$(TASK_TITLE="$TASK_TITLE" ~/.aidevops/agents/scripts/claim-task-id.sh --title "$TASK_TITLE" --repo-path "$(git rev-parse --show-toplevel)")
+output=$(~/.aidevops/agents/scripts/claim-task-id.sh --title "$TASK_TITLE" --repo-path "$(git rev-parse --show-toplevel)")
 ```
 
 > **Security note**: Always assign the user-supplied title to a variable first (`TASK_TITLE="..."`), then pass `"$TASK_TITLE"` as the argument. Never interpolate user input directly into a command string (e.g., `--title "$(user input)"`) — this allows shell metacharacters to execute arbitrary commands.
