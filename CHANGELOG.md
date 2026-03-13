@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.172.14] - 2026-03-13
+
+### Changed
+
+- Maintenance: claim t1469
+
+### Fixed
+
+- auto-generate release changelog when unreleased is empty
+
 ## [2.172.13] - 2026-03-13
 
 ### Changed
