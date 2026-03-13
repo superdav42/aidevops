@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.172.17] - 2026-03-13
+
+### Changed
+
+- Maintenance: claim t1471
+
+### Fixed
+
+- adapt pulse cold-start timeout to underfill severity (#4352)
+
 ## [2.172.16] - 2026-03-13
 
 ### Changed
