@@ -113,7 +113,7 @@ base64 -i screenshot.png | \
 
 **Image token costs**: Images are resized and tiled. A 1024x1024 image uses ~765 tokens. Larger images use more tiles. Use `detail: "low"` for cheaper analysis (~85 tokens per image).
 
-**Image size limits**: API limits vary by endpoint. For the Chat Completions API (vision), images are auto-resized: short side scaled to 768px for `high` detail, or 512px for `low` detail. The hard pixel cap is 8000×8000 px (≈64 megapixels). Large images increase token cost without improving accuracy. Refer to the [OpenAI vision API docs](https://platform.openai.com/docs/guides/vision) for current endpoint-specific limits and payload size constraints.
+**Image size limits**: Resize behavior and maximum dimensions vary by model family and `detail` setting. Tile-based models (GPT-4o, GPT-4.1, o-series) scale the short side before tiling; patch-based models use patch/budget logic (e.g., 32×32 patches). Many models cap at ~2048 px per dimension; some support `detail: "original"` allowing up to ~6000 px. Large images increase token cost without improving accuracy. Refer to the [OpenAI vision API docs](https://platform.openai.com/docs/guides/vision) for current per-model limits and payload size constraints.
 
 ### Anthropic (Claude Vision)
 
@@ -138,7 +138,7 @@ curl https://api.anthropic.com/v1/messages \
 
 **Supported formats**: JPEG, PNG, GIF, WebP. Max 5MB per image (API), 10MB (Claude.ai).
 
-**Image size limits**: Images larger than 8000×8000 px are rejected (hard limit ≈ 64 megapixels). Images with a long edge exceeding 1568 px are automatically downscaled by the API. For optimal latency, Anthropic recommends resizing to ≤1.15 megapixels within 1568 px in both dimensions. Full-page screenshots easily exceed these bounds. The API rejects oversized images with: `At least one of the image dimensions exceed max allowed size: 8000 pixels`. Resize before submission:
+**Image size limits**: Images larger than 8000×8000 px are rejected (hard limit ≈ 64 megapixels). Images with a long edge exceeding 1568 px are automatically downscaled by the API. For optimal latency, Anthropic recommends resizing to ≤1.15 megapixels with each dimension ≤1568 px. Full-page screenshots easily exceed these bounds. The API rejects oversized images with: `At least one of the image dimensions exceed max allowed size: 8000 pixels`. Resize before submission:
 
 ```bash
 # macOS (built-in, no install) — resize to 1568px max on longest side
@@ -148,7 +148,7 @@ sips --resampleHeightWidthMax 1568 input.png --out output.png
 magick input.png -resize '1568x1568>' output.png  # '>' = only shrink, never upscale
 ```
 
-The 1568px target avoids the auto-downscale latency penalty while staying well within the 8000px hard limit. See GH#4213 for the `browser-qa-helper.sh` auto-resize implementation.
+The 1568px target avoids the auto-downscale latency penalty while staying well within the 8000px hard limit. The `browser-qa-helper.sh` screenshot capture applies this resize automatically before submission.
 
 ### Google (Gemini Vision)
 
