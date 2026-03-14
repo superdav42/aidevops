@@ -183,6 +183,64 @@ Format the TODO.md entry using the allocated ID:
 
 If the brief is too thin for auto-dispatch, omit the tag and note why.
 
+### Step 6.5: Apply Model Tier and Agent Routing Labels
+
+**Model tier label** — Evaluate the task's reasoning complexity and add a tier tag. This tells the pulse which model intelligence level to use at dispatch time:
+
+| Tier | TODO Tag | GitHub Label | When to Apply |
+|------|----------|--------------|---------------|
+| thinking | `tier:thinking` | `tier:thinking` | Architecture decisions, novel design, complex trade-offs, security audits, multi-system reasoning |
+| simple | `tier:simple` | `tier:simple` | Docs-only, simple renames, formatting, config changes, label/tag updates |
+| *(coding)* | *(none)* | *(none)* | Standard implementation, bug fixes, refactors, tests — **default, no label needed** |
+
+**Default to no tier label** — most tasks are coding tasks that use sonnet. Only add a tier label when the task clearly needs more reasoning power (thinking) or clearly needs less (simple). When uncertain, omit the label — sonnet handles the vast majority of work well.
+
+**Agent routing label** — Evaluate whether the task maps to a specialist agent domain. If it does, add the corresponding tag to the TODO.md entry AND apply the matching GitHub label to the issue (if `task_ref` exists).
+
+| Domain Signal | TODO Tag | GitHub Label | Agent |
+|--------------|----------|--------------|-------|
+| SEO audit, keywords, GSC, schema markup, rankings | `#seo` | `seo` | SEO |
+| Blog posts, video scripts, newsletters, social copy | `#content` | `content` | Content |
+| Email campaigns, FluentCRM, landing pages | `#marketing` | `marketing` | Marketing |
+| Invoicing, receipts, financial ops | `#accounts` | `accounts` | Accounts |
+| Compliance, terms of service, privacy policy | `#legal` | `legal` | Legal |
+| Tech research, competitive analysis, market research | `#research` | `research` | Research |
+| CRM pipeline, proposals, outreach | `#sales` | `sales` | Sales |
+| Social media scheduling, posting | `#social-media` | `social-media` | Social-Media |
+| Video generation, editing, prompts | `#video` | `video` | Video |
+| Health and wellness content | `#health` | `health` | Health |
+| Code: features, bug fixes, refactors, CI | *(none)* | *(none)* | Build+ (default) |
+
+**Omit the domain tag for code tasks** — Build+ is the default and needs no label.
+
+If the task clearly matches a domain, apply the label:
+
+```bash
+# Apply labels if task_ref exists (issue was created)
+REPO_SLUG="$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || true)"
+if [[ -n "$task_ref" && -n "$REPO_SLUG" ]]; then
+  ISSUE_NUM="${task_ref#GH#}"
+  # Apply tier label (only for non-default tiers)
+  if [[ -n "$tier_label" ]]; then
+    gh label create "$tier_label" --repo "$REPO_SLUG" >/dev/null 2>&1 || true
+    if ! gh issue edit "$ISSUE_NUM" --repo "$REPO_SLUG" --add-label "$tier_label" >/dev/null 2>&1; then
+      echo "[new-task] WARN: failed to apply tier label '$tier_label' to ${task_ref}" >&2
+    fi
+  fi
+  # Apply domain label (only for non-code domains)
+  if [[ -n "$domain_label" ]]; then
+    gh label create "$domain_label" --repo "$REPO_SLUG" >/dev/null 2>&1 || true
+    if ! gh issue edit "$ISSUE_NUM" --repo "$REPO_SLUG" --add-label "$domain_label" >/dev/null 2>&1; then
+      echo "[new-task] WARN: failed to apply domain label '$domain_label' to ${task_ref}" >&2
+    fi
+  fi
+else
+  if [[ -n "$task_ref" ]]; then
+    echo "[new-task] WARN: unable to resolve repo slug for label application" >&2
+  fi
+fi
+```
+
 ### Step 7: Commit and Push
 
 Commit both the brief and TODO.md change, passing the commit message via a variable to prevent injection:
