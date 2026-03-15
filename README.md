@@ -8,7 +8,7 @@
 
 **One conversation, autonomous project delivery — with enterprise-level security & quality-control.**
 
-Founded by [Marcus Quinn](https://github.com/marcusquinn) on 9th November 2025 to help level-up everyone's AI game.
+Founded by [Marcus Quinn](https://github.com/marcusquinn) on 9th November 2025 to help level-up everyone's AI & Open-Source game.
 
 ## **The Philosophy**
 
