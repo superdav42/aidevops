@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-03-15
+
+### Changed
+
+- Maintenance: mark t1491 complete (pr:#4931 completed:2026-03-15) [skip ci]
+- Maintenance: add t1491 — Bash 3.2 config_get fix (GH#4929)
+- Maintenance: claim t1491
+
+### Fixed
+
+- add sqlite3 to setup.sh required dependencies (#4935)
+- replace Bash 4.0+ indirect expansion with eval for 3.2 compat (#4931)
+
 ## [3.0.0] - 2026-03-15
 
 ### Added
