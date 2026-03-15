@@ -381,7 +381,7 @@ run_wp_command() {
 	site_type=$(echo "$site_config" | jq -r '.type')
 
 	local args_str
-	args_str=$(printf '%q ' "${wp_args[@]}")
+	printf -v args_str '%q ' "${wp_args[@]}"
 	print_info "Running on $site_name ($site_type): wp ${args_str% }" >&2
 
 	# Execute directly without eval
@@ -404,7 +404,7 @@ run_on_category() {
 
 	print_info "Running on all sites in category: $category"
 	local args_str
-	args_str=$(printf '%q ' "${wp_args[@]}")
+	printf -v args_str '%q ' "${wp_args[@]}"
 	print_info "Command: wp ${args_str% }"
 	echo ""
 
@@ -449,7 +449,7 @@ run_on_all() {
 
 	print_info "Running on ALL sites"
 	local args_str
-	args_str=$(printf '%q ' "${wp_args[@]}")
+	printf -v args_str '%q ' "${wp_args[@]}"
 	print_info "Command: wp ${args_str% }"
 	echo ""
 
