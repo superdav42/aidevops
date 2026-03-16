@@ -108,7 +108,7 @@ Tasks with no open blockers - ready to work on. Use `/ready` to refresh this lis
 
 ### Product Agent Refactoring
 
-- [ ] t1537 Refactor shared product concerns from mobile-app-dev to product/ — extract universal product concerns (validation, onboarding, monetisation, UI design, analytics, growth) from mobile-app-dev/ into product/ directory. De-mobilify language, add growth.md acquisition playbook, update cross-references in mobile-app-dev.md and browser-extension-dev.md #refactor #product #auto-dispatch ~4h model:sonnet ref:GH#5092 logged:2026-03-16 started:2026-03-16
+- [x] t1537 Refactor shared product concerns from mobile-app-dev to product/ — extract universal product concerns (validation, onboarding, monetisation, UI design, analytics, growth) from mobile-app-dev/ into product/ directory. De-mobilify language, add growth.md acquisition playbook, update cross-references in mobile-app-dev.md and browser-extension-dev.md #refactor #product #auto-dispatch ~4h model:sonnet ref:GH#5092 logged:2026-03-16 started:2026-03-16 pr:#5095 completed:2026-03-16
 
 ### Email System — Phase 1: Foundation (IMAP/SMTP + Composition)
 
