@@ -1,7 +1,7 @@
 # Gastown vs AI DevOps — Comparative Analysis
 
-**Date**: 2026-03-16  
-**Analyst**: AI DevOps Framework  
+**Date**: 2026-03-16
+**Analyst**: AI DevOps Framework
 **Source**: https://github.com/steveyegge/gastown
 
 ---
