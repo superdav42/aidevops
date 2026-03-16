@@ -23,7 +23,7 @@ tools:
 - **Scanner**: `prompt-guard-helper.sh scan-stdin` (mandatory for all AI-processed email)
 - **DNS verification**: `email-health-check-helper.sh check <domain>` (SPF/DKIM/DMARC)
 - **Secretlint**: `secretlint --format stylish <file>` (outbound credential scanning)
-- **Related**: `tools/security/prompt-injection-defender.md`, `tools/security/opsec.md`, `services/email/email-health-check.md`, `services/email/email-agent.md`
+- **Related**: `tools/security/prompt-injection-defender.md`, `tools/security/opsec.md`, `services/email/email-health-check.md`, `services/email/email-agent.md`, `services/email/openpgp-setup.md`
 
 **Decision tree:**
 
@@ -31,7 +31,7 @@ tools:
 2. Suspicious sender? → [Phishing Detection](#phishing-detection)
 3. Email has attachments? → [Executable File Blocking](#executable-file-blocking)
 4. Sending sensitive info? → [Secure Information Sharing](#secure-information-sharing-privatebin)
-5. Need email encryption? → [S/MIME](#smime-setup) or [OpenPGP](#openpgp-setup)
+5. Need email encryption? -> [S/MIME](#smime-setup) or [OpenPGP Setup Helper](openpgp-setup.md)
 6. Receiving commands via email? → [Inbound Command Security](#inbound-command-security)
 7. Forwarding receipts/invoices? → [Transaction Email Verification](#transaction-email-phishing-verification)
 8. Sending outbound email? → [Outbound Credential Scanning](#outbound-credential-scanning-secretlint)
@@ -438,47 +438,17 @@ send_email() {
 
 S/MIME (Secure/Multipurpose Internet Mail Extensions) provides email encryption and digital signatures using X.509 certificates. It is widely supported by enterprise email clients.
 
-### Certificate Acquisition
+For the full setup guide — certificate acquisition (free and paid CAs), per-client installation (Apple Mail, Thunderbird, Outlook, Gmail), key backup and recovery, agent-assisted signing/encryption commands, and cross-client compatibility — see:
 
-| Provider | Type | Cost | Validity |
-|----------|------|------|----------|
-| [Actalis](https://www.actalis.com/s-mime.aspx) | Free S/MIME | Free | 1 year |
-| [Comodo/Sectigo](https://www.sectigo.com/ssl-certificates-tls/email-smime-certificate) | Personal | ~$12/year | 1-3 years |
-| [DigiCert](https://www.digicert.com/tls-ssl/client-certificates) | Enterprise | ~$25/year | 1-3 years |
-| [Let's Encrypt](https://letsencrypt.org/) | Not available | N/A | N/A (TLS only) |
+**`services/email/smime-setup.md`**
 
-### Installation by Client
+### Quick Reference
 
-**Apple Mail (macOS/iOS):**
-
-1. Double-click the `.p12` certificate file to import into Keychain
-2. Enter the certificate password
-3. Open Mail → Preferences → Accounts → select account
-4. Signing and encryption options appear automatically
-5. Compose a new email — lock icon (encrypt) and signature icon appear
-
-**Thunderbird:**
-
-1. Settings → Account Settings → End-to-End Encryption
-2. Click "Manage S/MIME Certificates" → Import
-3. Select your `.p12` file and enter the password
-4. Under "S/MIME" section, select the certificate for signing and encryption
-5. Choose default signing/encryption preferences
-
-**Outlook (Desktop):**
-
-1. File → Options → Trust Center → Trust Center Settings
-2. Email Security → Import/Export → Import certificate (`.p12`)
-3. Under "Encrypted email", select the certificate
-4. Choose default signing/encryption settings
-
-**Gmail (Google Workspace — Enterprise only):**
-
-- S/MIME requires Google Workspace Enterprise or Education Plus
-- Admin console → Apps → Google Workspace → Gmail → User settings → S/MIME
-- Upload certificate via admin console or user self-service
-
-### Verifying S/MIME
+| Provider | Cost | Validity |
+|----------|------|---------|
+| [Actalis](https://www.actalis.com/s-mime.aspx) | Free | 1 year |
+| [Sectigo](https://www.sectigo.com/ssl-certificates-tls/email-smime-certificate) | ~$12/year | 1–3 years |
+| [DigiCert](https://www.digicert.com/tls-ssl/client-certificates) | ~$25/year | 1–3 years |
 
 ```bash
 # Verify a certificate
@@ -487,13 +457,15 @@ openssl x509 -in cert.pem -text -noout
 # Check certificate expiry
 openssl x509 -in cert.pem -enddate -noout
 
-# Extract public key from a received S/MIME email
-openssl smime -verify -in signed-email.eml -noverify -signer /dev/stdout
+# Extract signer certificate from a received S/MIME email
+openssl smime -verify -in signed-email.eml -noverify -signer signer-cert.pem -out /dev/null
 ```
 
 ## OpenPGP Setup
 
 OpenPGP provides email encryption and signing using public-key cryptography. Unlike S/MIME, it does not require a certificate authority — users generate and distribute their own keys.
+
+For full setup workflows (key generation hardening, keyserver publishing, Thunderbird/Apple Mail/Mutt integration, key exchange, and safe agent-assisted command patterns), use `services/email/openpgp-setup.md`.
 
 ### Key Generation
 
@@ -761,6 +733,7 @@ verify_transaction_email() {
 - `services/email/email-health-check.md` — SPF/DKIM/DMARC/MX verification and content checks
 - `services/email/email-agent.md` — Autonomous email agent for mission communication
 - `services/email/email-testing.md` — Email deliverability and rendering testing
+- `services/email/smime-setup.md` — Full S/MIME setup guide (certificate acquisition, per-client installation, key backup, agent commands, cross-client compatibility)
 - `tools/security/tamper-evident-audit.md` — Audit logging for security events
 - `tools/security/ip-reputation.md` — IP and domain reputation checking
 - `tools/credentials/encryption-stack.md` — gopass, SOPS, gocryptfs for credential management

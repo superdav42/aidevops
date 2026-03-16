@@ -20,7 +20,9 @@ tools:
 
 - **Purpose**: Intelligent mailbox organization, triage, flagging, and shared mailbox workflows
 - **Protocols**: IMAP4rev1 (RFC 9051), JMAP (RFC 8621), ManageSieve (RFC 5804)
-- **Helper**: `scripts/email-agent-helper.sh` (mailbox operations via configured adapter)
+- **Helper**: `scripts/email-mailbox-helper.sh` (IMAP/JMAP mailbox operations, auto-detects protocol)
+- **IMAP adapter**: `scripts/email_imap_adapter.py` (IMAP protocol layer)
+- **JMAP adapter**: `scripts/email_jmap_adapter.py` (JMAP RFC 8620/8621 protocol layer, push support)
 - **Related**: `services/email/email-agent.md` (mission communication), `services/email/ses.md` (sending)
 
 **Key principle**: Every mailbox action follows a decision tree. Consistent organization beats ad-hoc sorting.
@@ -546,6 +548,8 @@ sieve-connect --server mail.example.com --user admin \
 
 ## IMAP vs JMAP Adapter Selection
 
+The helper auto-detects the best protocol from provider config. JMAP is preferred when the provider has a `jmap.url` configured (e.g., Fastmail). Both adapters share the same SQLite metadata index.
+
 ### When to Use IMAP
 
 - Server only supports IMAP (most self-hosted, older providers)
@@ -555,18 +559,19 @@ sieve-connect --server mail.example.com --user admin \
 
 ### When to Use JMAP
 
-- Server supports JMAP (Fastmail, Cyrus 3.x, Apache James)
+- Server supports JMAP (Fastmail, Cyrus 3.x, Apache James, Stalwart)
 - Complex queries: multi-condition filters, server-side sorting
 - Batch operations: update many messages in one request
 - Bandwidth efficiency for bulk operations (binary JSON, delta sync)
 - Native threading support needed
+- Push notifications for new mail (EventSource SSE)
 
 ### Adapter Comparison
 
-| Feature | IMAP | JMAP |
+| Feature | IMAP (`email_imap_adapter.py`) | JMAP (`email_jmap_adapter.py`) |
 |---------|------|------|
 | Protocol | Text-based, stateful TCP | JSON over HTTP, stateless |
-| Push notifications | IDLE (one folder) or NOTIFY | Event source / push subscription |
+| Push notifications | IDLE (one folder) or NOTIFY | EventSource SSE (`push` command) |
 | Batch operations | One command at a time | Multiple method calls per request |
 | Threading | Extension (RFC 5256), not universal | Native Thread objects |
 | Search | SEARCH command, limited operators | Rich FilterCondition, server-side |
@@ -574,6 +579,7 @@ sieve-connect --server mail.example.com --user admin \
 | Custom flags | PERMANENTFLAGS dependent | Keywords (always supported) |
 | Offline sync | CONDSTORE/QRESYNC extensions | State strings for delta sync |
 | Attachment handling | FETCH BODY sections | Blob download by ID |
+| Message IDs | Integer UIDs (`--uid`) | String IDs (`--email-id`) |
 
 ### Configuration
 
@@ -584,6 +590,36 @@ openssl s_client -connect mail.example.com:993 -quiet <<< "a1 CAPABILITY"
 
 # JMAP
 curl -s https://mail.example.com/.well-known/jmap | jq '.capabilities'
+
+# Test connectivity via helper (auto-detects protocol)
+email-mailbox-helper.sh accounts --test
+```
+
+### JMAP Push Notifications
+
+JMAP push uses Server-Sent Events (SSE) via the `eventSourceUrl` from the JMAP session. The `push` command listens for state changes and emits JSON events to stdout.
+
+```bash
+# Listen for new mail events (5 minute timeout)
+email-mailbox-helper.sh push fastmail --timeout 300
+
+# Listen for all event types
+email-mailbox-helper.sh push fastmail --types mail,contacts,calendars
+
+# Output format (one JSON object per line):
+# {"event_type":"state","data":{"changed":{"account-id":{"Email":...}}},"timestamp":"..."}
+```
+
+### JMAP Credentials
+
+JMAP authentication uses bearer tokens or HTTP Basic auth:
+
+```bash
+# Store JMAP token (Fastmail app password works for both IMAP and JMAP)
+aidevops secret set email-jmap-fastmail
+
+# The helper falls back to IMAP password if no JMAP-specific token exists
+# For Fastmail, the same app password works for both protocols
 ```
 
 ## Search Patterns
@@ -661,9 +697,12 @@ SEARCH OR (FROM "alice@example.com" SUBJECT "report") (FROM "bob@example.com" SU
 ## Related
 
 - `services/email/email-agent.md` -- Mission communication agent (send/receive/extract)
+- `services/email/email-mailbox-search.md` -- OS-level mailbox search (Spotlight, notmuch, mu) including attachment content
 - `services/email/ses.md` -- Amazon SES sending configuration
 - `services/email/email-testing.md` -- Email deliverability testing
 - `services/email/email-health-check.md` -- Email infrastructure health checks
+- `services/communications/cross-channel-conversation-continuity.md` -- Entity-aware continuity patterns across email and chat channels
 - `scripts/email-agent-helper.sh` -- Helper script for mailbox operations
+- `scripts/mailbox-search-helper.sh` -- Spotlight/notmuch/mu search helper (t1522)
 - `scripts/email-to-markdown.py` -- Email parsing pipeline
 - `scripts/email-thread-reconstruction.py` -- Thread building from raw messages
