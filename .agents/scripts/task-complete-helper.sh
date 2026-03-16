@@ -10,6 +10,8 @@
 #   --verified <date>          Verified date (YYYY-MM-DD, defaults to today)
 #   --verify                   Run verify-brief.sh on task brief before completing
 #   --repo-path <path>         Path to git repository (default: current directory)
+#   --gh-repo <owner/repo>     GitHub repo slug for PR lookup (default: auto-detect from git remote)
+#   --skip-merge-check         Skip PR merge verification (use only in tests or CI environments)
 #   --no-push                  Mark complete but don't push (for testing)
 #   --help                     Show this help message
 #
@@ -18,19 +20,22 @@
 #   task-complete-helper.sh t124 --verified 2026-02-12
 #   task-complete-helper.sh t125 --verified  # Uses today's date
 #   task-complete-helper.sh t126 --pr 789 --verify  # Verify brief before completing
+#   task-complete-helper.sh t127 --pr 101 --gh-repo owner/repo  # Cross-repo PR lookup
 #
 # Exit codes:
 #   0 - Success (task marked complete, committed, and pushed)
-#   1 - Error (missing arguments, task not found, git error, etc.)
+#   1 - Error (missing arguments, task not found, git error, PR not merged, etc.)
 #
 # This script enforces the proof-log requirement for task completion:
 #   - Requires either --pr or --verified argument
+#   - When --pr is given, verifies the PR is actually MERGED before proceeding
 #   - Marks task [x] in TODO.md
 #   - Adds pr:#NNN or verified:YYYY-MM-DD to the task line
 #   - Adds completed:YYYY-MM-DD timestamp
 #   - Commits and pushes the change
 #
 # This closes the interactive AI enforcement gap (t317).
+# PR merge verification closes the premature-completion bug (GH#466 on Ultimate-Multisite/ai-agent).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
 source "${SCRIPT_DIR}/shared-constants.sh"
@@ -42,8 +47,10 @@ TASK_ID=""
 PR_NUMBER=""
 VERIFIED_DATE=""
 REPO_PATH="$PWD"
+GH_REPO=""
 NO_PUSH=false
 VERIFY_BRIEF=false
+SKIP_MERGE_CHECK=false
 
 # Logging: uses shared log_* from shared-constants.sh
 
@@ -99,6 +106,19 @@ parse_args() {
 			REPO_PATH="$val"
 			shift 2
 			;;
+		--gh-repo)
+			val="${2:-}"
+			if [[ -z "$val" || "$val" == --* ]]; then
+				echo "Error: --gh-repo requires an owner/repo slug" >&2
+				exit 1
+			fi
+			GH_REPO="$val"
+			shift 2
+			;;
+		--skip-merge-check)
+			SKIP_MERGE_CHECK=true
+			shift
+			;;
 		--no-push)
 			NO_PUSH=true
 			shift
@@ -143,6 +163,52 @@ parse_args() {
 		return 1
 	fi
 
+	return 0
+}
+
+# Verify a PR is actually merged before allowing task completion.
+# This prevents the premature-completion bug where a worker calls this script
+# with --pr NNN immediately after creating the PR (before it is merged).
+#
+# Arguments:
+#   $1 - PR number
+#   $2 - GitHub repo slug (owner/repo), or empty to auto-detect from git remote
+#
+# Returns:
+#   0 - PR is merged
+#   1 - PR is not merged, or lookup failed
+verify_pr_merged() {
+	local pr_number="$1"
+	local gh_repo="${2:-}"
+
+	# Build the gh pr view command — add --repo only when a slug is provided
+	local gh_args=("pr" "view" "$pr_number" "--json" "state,mergedAt")
+	if [[ -n "$gh_repo" ]]; then
+		gh_args+=("--repo" "$gh_repo")
+	fi
+
+	log_info "Verifying PR #${pr_number} is merged${gh_repo:+ (repo: $gh_repo)}..."
+
+	local pr_json
+	if ! pr_json=$(gh "${gh_args[@]}" 2>&1); then
+		log_error "Failed to fetch PR #${pr_number}: ${pr_json}"
+		log_error "Check that the PR exists and gh CLI is authenticated."
+		return 1
+	fi
+
+	local pr_state
+	local pr_merged_at
+	pr_state=$(printf '%s' "$pr_json" | jq -r '.state // ""' 2>/dev/null || true)
+	pr_merged_at=$(printf '%s' "$pr_json" | jq -r '.mergedAt // ""' 2>/dev/null || true)
+
+	if [[ "$pr_state" != "MERGED" ]] || [[ -z "$pr_merged_at" ]] || [[ "$pr_merged_at" == "null" ]]; then
+		log_error "PR #${pr_number} is not merged (state: ${pr_state:-unknown})"
+		log_error "Task completion is only allowed after the PR is merged."
+		log_error "Wait for the PR to merge, then re-run: task-complete-helper.sh $TASK_ID --pr $pr_number"
+		return 1
+	fi
+
+	log_success "PR #${pr_number} is merged (mergedAt: ${pr_merged_at})"
 	return 0
 }
 
@@ -325,6 +391,17 @@ main() {
 	if [[ -n "$PR_NUMBER" ]]; then
 		proof_log="pr:#${PR_NUMBER}"
 		log_info "Proof-log: PR #${PR_NUMBER}"
+
+		# Verify the PR is actually merged before marking the task complete.
+		# This prevents the premature-completion bug (GH#466) where a worker
+		# calls this script right after opening a PR, before it is merged.
+		if [[ "$SKIP_MERGE_CHECK" == "true" ]]; then
+			log_warn "Skipping PR merge check (--skip-merge-check). Use only in tests."
+		else
+			if ! verify_pr_merged "$PR_NUMBER" "$GH_REPO"; then
+				return 1
+			fi
+		fi
 	else
 		proof_log="verified:${VERIFIED_DATE}"
 		log_info "Proof-log: verified ${VERIFIED_DATE}"
