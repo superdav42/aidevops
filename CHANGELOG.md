@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.12] - 2026-03-16
+
+### Changed
+
+- Performance: gate daily quality sweep to off-peak hours (18:00-23:59 local) (#5131)
+- Refactor: extract ensure_trailing_newline() to reduce duplication in aidevops.sh (#5120)
+
+### Fixed
+
+- scope /runners to specified items only, remove /pulse spec duplication (#5129)
+- use aidevops config get paths.agents_dir in HELPER= dispatch examples (#5125)
+- use dynamic agents_dir path for headless-runtime-helper.sh dispatch examples (#5124)
+- replace hardcoded year with [year] placeholder in query-fanout-research.md (#5126)
+- address PR #5087 review feedback (#5123)
+- RFC 4180 quote all CSV fields in attachment manifest (GH#5114) (#5122)
+- align -> arrows in tool stack summaries for readability (#5121)
+- address PR #5014 review feedback on google-workspace.md (#5116)
+- correct WPackagist acquisition year from 2026 to 2024 (#5118)
+- use secretlint exit code instead of fragile regex in patch preflight (#5117)
+- tighten awk regex patterns in list_active_worker_processes to reduce false positives (#5119)
+- route /runners dispatch through headless-runtime-helper.sh (GH#5096) (#5099)
+- backfill script — skip completed issues to avoid unnecessary API calls (#5097)
+
 ## [3.0.10] - 2026-03-16
 
 ### Added
