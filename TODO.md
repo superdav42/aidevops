@@ -102,6 +102,8 @@ Tasks with no open blockers - ready to work on. Use `/ready` to refresh this lis
 
 - [x] t1540 fix: gh auth token missing workflow scope blocks CI workflow PRs — Workers that modify `.github/workflows/` cannot push because the `gh` OAuth token lacks the `workflow` scope. Add `workflow` to required scopes in setup.sh auth flow, add pre-push detection in headless-runtime-helper.sh to warn early when changed files include workflows and token lacks scope, update docs. #bugfix #auth #ci #auto-dispatch ~2h model:sonnet ref:GH#5138 logged:2026-03-17 -> [todo/tasks/t1540-brief.md] pr:#5139 completed:2026-03-17
 
+- [ ] t1542 fix: aidevops update leaves 14 additional orphaned archived scripts beyond supervisor — `cleanup_deprecated_paths()` in `setup-modules/migrations.sh` only handles `supervisor-helper.sh` + `supervisor/` directory (PR #5151). 14 more scripts archived upstream still present in active paths locally: pattern-tracker-helper.sh, quality-sweep-helper.sh, quality-loop-helper.sh, review-pulse-helper.sh, self-improve-helper.sh, coderabbit-pulse-helper.sh, coderabbit-task-creator-helper.sh, audit-task-creator-helper.sh, batch-cleanup-helper.sh, coordinator-helper.sh, finding-to-task-helper.sh, objective-runner-helper.sh, ralph-loop-helper.sh, stale-pr-helper.sh. Follow-up to GH#5147/PR#5151. #bugfix #setup #auto-dispatch ~1h model:sonnet ref:GH#5155 logged:2026-03-17
+
 ## Backlog
 
 ### SEO/GEO Agent Intelligence
