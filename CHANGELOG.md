@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.24] - 2026-03-20
+
+### Changed
+
+- Maintenance: mark t1548 complete (pr:#5324 completed:2026-03-20) [skip ci]
+
+### Fixed
+
+- add local callback server for OpenAI OAuth redirect (#5325)
+
 ## [3.1.23] - 2026-03-20
 
 ### Changed
