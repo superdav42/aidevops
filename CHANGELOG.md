@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.23] - 2026-03-20
+
+### Changed
+
+- Maintenance: reopen t1548 — worker PR broke auth with array, needs single-hook fix
+
+### Fixed
+
+- add dummy models to pool providers so they appear in Ctrl+A
+
 ## [3.1.22] - 2026-03-20
 
 ### Fixed
