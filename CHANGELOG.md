@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.16] - 2026-03-20
+
+### Changed
+
+- Tests: add regression for non-interactive Homebrew guard (#5307)
+
+### Fixed
+
+- clarify pulse scope decision heading (#5306)
+
 ## [3.1.0] - 2026-03-18
 
 ### Added
