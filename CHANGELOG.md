@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.20] - 2026-03-20
+
+### Changed
+
+- Maintenance: add t1548 — OpenAI Pro multi-account pool rotation (ref:GH#5318)
+- Maintenance: claim t1548
+
+### Fixed
+
+- derive session count threshold from system RAM instead of hardcoded 5
+
 ## [3.1.19] - 2026-03-20
 
 ### Added
