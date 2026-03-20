@@ -153,7 +153,16 @@ export function createTtsrHooks(deps) {
     return violations;
   }
 
-  async function systemTransformHook(_input, output) {
+  async function systemTransformHook(input, output) {
+    // Prepend Claude Code identity for anthropic provider (required by API)
+    if (input.model?.providerID === "anthropic") {
+      const prefix = "You are Claude Code, Anthropic's official CLI for Claude.";
+      output.system.unshift(prefix);
+      if (output.system[1]) {
+        output.system[1] = prefix + "\n\n" + output.system[1];
+      }
+    }
+
     const rules = loadTtsrRules();
 
     const ruleLines = rules
