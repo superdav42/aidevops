@@ -28,10 +28,10 @@ import { createHash, randomBytes } from "crypto";
 const HOME = homedir();
 const POOL_FILE = join(HOME, ".aidevops", "oauth-pool.json");
 const CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e";
-const TOKEN_ENDPOINT = "https://console.anthropic.com/v1/oauth/token";
+const TOKEN_ENDPOINT = "https://platform.claude.com/v1/oauth/token";
 const OAUTH_AUTHORIZE_URL = "https://claude.ai/oauth/authorize";
 const REDIRECT_URI = "https://console.anthropic.com/oauth/code/callback";
-const OAUTH_SCOPES = "org:create_api_key user:profile user:inference";
+const OAUTH_SCOPES = "org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload";
 
 /** Default cooldown when rate limited (ms) */
 const RATE_LIMIT_COOLDOWN_MS = 60_000;
@@ -88,7 +88,10 @@ async function fetchTokenEndpoint(body, context) {
 
   const response = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "claude-cli/2.1.2 (external, cli)",
+    },
     body,
   });
 
@@ -204,7 +207,15 @@ function getAccounts(provider) {
 function upsertAccount(provider, account) {
   const pool = loadPool();
   if (!pool[provider]) pool[provider] = [];
-  const idx = pool[provider].findIndex((a) => a.email === account.email);
+
+  // Match by email. When email is "unknown" and there's exactly one existing
+  // account (also "unknown"), replace it rather than creating duplicates.
+  let idx = pool[provider].findIndex((a) => a.email === account.email);
+  if (idx < 0 && account.email === "unknown") {
+    const unknownIdx = pool[provider].findIndex((a) => a.email === "unknown");
+    if (unknownIdx >= 0) idx = unknownIdx;
+  }
+
   if (idx >= 0) {
     pool[provider][idx] = account;
   } else {
@@ -651,7 +662,7 @@ export async function initPoolAuth(client) {
   try {
     await client.auth.set({
       path: { id: "anthropic-pool" },
-      body: { type: "oauth", refresh: "", access: "", expires: 0 },
+      body: { type: "pending", refresh: "", access: "", expires: 0 },
     });
     console.error("[aidevops] OAuth pool: seeded auth entry for anthropic-pool");
   } catch (err) {
@@ -767,8 +778,43 @@ export function createPoolAuthHook(client) {
 
               const json = await result.json();
 
+              // Resolve account email from user profile if prompts were skipped
+              let resolvedEmail = email;
+              if (resolvedEmail === "unknown" && json.access_token) {
+                const profileEndpoints = [
+                  "https://console.anthropic.com/api/auth/user",
+                  "https://api.anthropic.com/api/auth/user",
+                ];
+                for (const endpoint of profileEndpoints) {
+                  try {
+                    const profileResp = await fetch(endpoint, {
+                      headers: {
+                        "Authorization": `Bearer ${json.access_token}`,
+                        "User-Agent": "claude-cli/2.1.2 (external, cli)",
+                      },
+                      redirect: "follow",
+                    });
+                    if (profileResp.ok) {
+                      const profile = await profileResp.json();
+                      const found = profile.email || profile.email_address
+                        || profile.user?.email || profile.account?.email;
+                      if (found) {
+                        resolvedEmail = found;
+                        console.error(`[aidevops] OAuth pool: resolved email ${found} from ${endpoint}`);
+                        break;
+                      }
+                    }
+                  } catch {
+                    // Try next endpoint
+                  }
+                }
+                if (resolvedEmail === "unknown") {
+                  console.error("[aidevops] OAuth pool: could not resolve email from profile API — account stored as 'unknown'");
+                }
+              }
+
               upsertAccount("anthropic", {
-                email,
+                email: resolvedEmail,
                 refresh: json.refresh_token,
                 access: json.access_token,
                 expires: Date.now() + json.expires_in * 1000,
@@ -780,7 +826,7 @@ export function createPoolAuthHook(client) {
 
               const totalAccounts = getAccounts("anthropic").length;
               console.error(
-                `[aidevops] OAuth pool: added ${email} (${totalAccounts} account${totalAccounts === 1 ? "" : "s"} total)`,
+                `[aidevops] OAuth pool: added ${resolvedEmail} (${totalAccounts} account${totalAccounts === 1 ? "" : "s"} total)`,
               );
 
               return {
@@ -812,17 +858,8 @@ export function registerPoolProvider(config) {
     npm: "@ai-sdk/anthropic",
     api: "https://api.anthropic.com/v1",
     models: {
-      "claude-sonnet-4-20250514": {
-        name: "Claude Sonnet 4",
-        attachment: true, reasoning: true, tool_call: true,
-        temperature: true, interleaved: true,
-        modalities: { input: ["text", "image", "pdf"], output: ["text"] },
-        cost: { input: 0, output: 0, cache_read: 0, cache_write: 0 },
-        limit: { context: 200000, output: 16000 },
-        family: "claude-4",
-      },
-      "claude-opus-4-20250514": {
-        name: "Claude Opus 4",
+      "claude-opus-4-6": {
+        name: "Claude Opus 4.6",
         attachment: true, reasoning: true, tool_call: true,
         temperature: true, interleaved: true,
         modalities: { input: ["text", "image", "pdf"], output: ["text"] },
@@ -830,24 +867,24 @@ export function registerPoolProvider(config) {
         limit: { context: 200000, output: 32000 },
         family: "claude-4",
       },
-      "claude-3-7-sonnet-20250219": {
-        name: "Claude 3.7 Sonnet",
-        attachment: true, reasoning: true, tool_call: true, temperature: true,
-        interleaved: true,
+      "claude-sonnet-4-6": {
+        name: "Claude Sonnet 4.6",
+        attachment: true, reasoning: true, tool_call: true,
+        temperature: true, interleaved: true,
         modalities: { input: ["text", "image", "pdf"], output: ["text"] },
         cost: { input: 0, output: 0, cache_read: 0, cache_write: 0 },
-        limit: { context: 200000, output: 16384 },
-        family: "claude-3.7",
+        limit: { context: 200000, output: 16000 },
+        family: "claude-4",
       },
-      "claude-3-5-haiku-20241022": {
-        name: "Claude 3.5 Haiku",
-        attachment: true, reasoning: true, tool_call: true, temperature: true,
-        interleaved: true,
-        modalities: { input: ["text", "image"], output: ["text"] },
+      "claude-haiku-4-5": {
+        name: "Claude Haiku 4.5",
+        attachment: true, tool_call: true, temperature: true,
+        modalities: { input: ["text", "image", "pdf"], output: ["text"] },
         cost: { input: 0, output: 0, cache_read: 0, cache_write: 0 },
         limit: { context: 200000, output: 8192 },
-        family: "claude-3.5",
+        family: "claude-4",
       },
+
     },
   };
 
