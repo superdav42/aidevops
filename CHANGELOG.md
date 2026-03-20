@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.25] - 2026-03-20
+
+### Fixed
+
+- OAuth pool unknown email handling — pending token flow and provider visibility (#5337)
+
 ## [3.1.24] - 2026-03-20
 
 ### Changed
