@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.43] - 2026-03-21
+
+### Changed
+
+- Performance: hoist statusOrder constant to module scope in provider-auth (#5435)
+- Refactor: simplify open_browser() with for-loop over browser commands (#5410)
+
+### Fixed
+
+- re-enable auth hook as single object (not array) (#5444)
+- store claudebar release URL in variable for maintainability (#5434)
+
 ## [3.1.42] - 2026-03-21
 
 ### Added
