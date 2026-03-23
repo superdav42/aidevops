@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.76] - 2026-03-23
+
+### Fixed
+
+- Homebrew wrapper prefers git repo aidevops.sh over installed snapshot (#5545)
+
 ## [3.1.75] - 2026-03-23
 
 ### Fixed
