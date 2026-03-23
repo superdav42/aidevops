@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.74] - 2026-03-23
+
+### Fixed
+
+- npm wrapper prefers git repo aidevops.sh over bundled copy (#5543)
+
 ## [3.1.73] - 2026-03-23
 
 ### Changed
