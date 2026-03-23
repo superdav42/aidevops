@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.77] - 2026-03-23
+
+### Changed
+
+- Maintenance: pin OpenCode to 1.2.27 — versions >1.2.27 break OAuth (#5547)
+
 ## [3.1.76] - 2026-03-23
 
 ### Fixed
