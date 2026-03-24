@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.88] - 2026-03-24
+
+### Fixed
+
+- handle 401/403 (server-side token revocation) in OAuth pool with auto-refresh (#5612)
+
 ## [3.1.80] - 2026-03-23
 
 ### Changed
