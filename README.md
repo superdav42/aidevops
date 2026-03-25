@@ -101,7 +101,7 @@ The result: an AI operations platform that manages projects across every busines
 - `aidevops update` - Update framework
 - `aidevops auto-update` - Automatic update polling (enable/disable/status)
 - `aidevops secret` - Manage secrets (gopass encrypted, AI-safe)
-- `aidevops security scan` - Secret hygiene & supply chain scan
+- `aidevops security` - Full security assessment (posture, secrets, supply chain)
 - `/onboarding` - Interactive setup wizard (in AI assistant)
 
 ### Agent Structure
