@@ -135,6 +135,60 @@ print_final_instructions() {
 	return 0
 }
 
+# Setup Tabby terminal profiles from repos.json.
+# Creates a profile per registered repo with colour-matched themes and
+# the TABBY_AUTORUN hook for OpenCode TUI compatibility.
+# Skipped if Tabby is not installed.
+setup_tabby() {
+	local tabby_helper="$HOME/.aidevops/agents/scripts/tabby-helper.sh"
+	local tabby_config
+
+	# Platform-aware config path
+	if [[ "$(uname -s)" == "Darwin" ]]; then
+		tabby_config="$HOME/Library/Application Support/tabby/config.yaml"
+	else
+		tabby_config="$HOME/.config/tabby-terminal/config.yaml"
+	fi
+
+	# Skip if Tabby not installed
+	if [[ ! -f "$tabby_config" ]]; then
+		return 0
+	fi
+
+	# Skip if helper not deployed yet
+	if [[ ! -x "$tabby_helper" ]]; then
+		return 0
+	fi
+
+	print_info "Tabby terminal detected"
+
+	# Install zshrc hook (idempotent)
+	if ! bash "$tabby_helper" zshrc; then
+		print_warning "Failed to install Tabby zshrc hook — run manually: aidevops tabby zshrc"
+	fi
+
+	if [[ "$NON_INTERACTIVE" == "true" ]]; then
+		# Non-interactive: sync silently, warn on failure
+		if ! bash "$tabby_helper" sync; then
+			print_warning "Tabby profile sync failed — run manually: aidevops tabby sync"
+		fi
+		return 0
+	fi
+
+	# Show status and offer to sync
+	echo ""
+	bash "$tabby_helper" status || true
+	echo ""
+	read -r -p "Sync Tabby profiles from repos.json? [Y/n]: " sync_tabby
+	if [[ "$sync_tabby" =~ ^[Yy]?$ ]]; then
+		bash "$tabby_helper" sync
+	else
+		print_info "Skipped. Run later: aidevops tabby sync"
+	fi
+
+	return 0
+}
+
 # Offer to launch onboarding for new users (only if not running inside an AI
 # runtime session and not non-interactive). (t1665.5 — registry-driven)
 # Respects config: aidevops config set ui.onboarding_prompt false

@@ -867,7 +867,9 @@ _setup_post_setup_steps() {
 
 	# Non-interactive mode: deploy + migrations only — skip schedulers,
 	# services, and optional post-setup work (CI/agent shells don't need them).
+	# Tabby profile sync runs in both modes (has its own non-interactive path).
 	if [[ "$NON_INTERACTIVE" == "true" ]]; then
+		setup_tabby
 		return 0
 	fi
 
@@ -883,6 +885,7 @@ _setup_post_setup_steps() {
 	setup_draft_responses
 	setup_profile_readme
 	setup_oauth_token_refresh
+	setup_tabby
 	print_final_instructions
 
 	# Check for tool updates if --update flag was passed
