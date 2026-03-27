@@ -108,6 +108,11 @@ Tasks with no open blockers - ready to work on. Use `/ready` to refresh this lis
 
 ## Backlog
 
+### Setup/Update Bugs
+
+- [ ] t1683 fix: Claude Code MCP registration fails — grep pattern `^name<space>` doesn't match `claude mcp list` output format `name: command - status`. All 7 MCP servers show "Failed to register" warning on every setup run despite being already registered. Fix: change grep pattern in mcp-config-adapter.sh:230 from `^${mcp_name}[[:space:]]` to `^${mcp_name}:` #bugfix #setup #auto-dispatch ~30m model:sonnet ref:GH#6848 logged:2026-03-27
+- [ ] t1684 fix: Cisco skill scanner uv install fails, falls back to pipx — `uv tool install cisco-ai-skill-scanner` errors during setup, producing noisy output before pipx fallback succeeds. Either swap install order (pipx first), skip uv for this package, or check if already installed before attempting install. #bugfix #setup #auto-dispatch ~30m model:sonnet ref:GH#6849 logged:2026-03-27
+
 ### Context Token Optimization
 
 Session baseline grew from ~9.5k tokens (Mar 1) to ~21.8k tokens (Mar 27) in prompt files alone. Total session cost ~39k tokens before first user message. Target: reduce back toward ~25k total baseline.
