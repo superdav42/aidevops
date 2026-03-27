@@ -108,6 +108,11 @@ Tasks with no open blockers - ready to work on. Use `/ready` to refresh this lis
 
 ## Backlog
 
+### Windows Platform Support
+
+- [ ] t1689 feat: add Windows schtasks support to schedulers.sh — no background OAuth token refresh exists on Windows (MINGW64/Git Bash). `schedulers.sh` only handles macOS (launchd) and Linux (cron). Add `schtasks` code path to run `oauth-pool-helper.sh refresh anthropic` every 30 min. #feature #windows #auto-dispatch ~2h model:sonnet ref:GH#6900 logged:2026-03-27
+- [ ] t1690 fix: replace fcntl with cross-platform file locking in oauth-pool-helper.sh — embedded Python uses `import fcntl` for file locking which doesn't exist on Windows, silently crashing refresh/rotate commands. Use `msvcrt.locking` on Windows or a portability wrapper. #bugfix #windows #auto-dispatch ~1h model:sonnet ref:GH#6901 logged:2026-03-27
+
 ### Setup/Update Bugs
 
 - [ ] t1683 fix: Claude Code MCP registration fails — grep pattern `^name<space>` doesn't match `claude mcp list` output format `name: command - status`. All 7 MCP servers show "Failed to register" warning on every setup run despite being already registered. Fix: change grep pattern in mcp-config-adapter.sh:230 from `^${mcp_name}[[:space:]]` to `^${mcp_name}:` #bugfix #setup #auto-dispatch ~30m model:sonnet ref:GH#6848 logged:2026-03-27
