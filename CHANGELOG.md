@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.289] - 2026-03-27
+
+### Added
+
+- add Tabby terminal profile generator from repos.json (#6786)
+
 ## [3.1.154] - 2026-03-25
 
 ### Changed
