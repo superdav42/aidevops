@@ -690,12 +690,13 @@ disable_ondemand_mcps() {
 	# Note: use exact MCP key names from opencode.json
 	local -a ondemand_mcps=(
 		"playwriter"
+		"playwright"
 		"augment-context-engine"
 		"gh_grep"
 		"google-analytics-mcp"
 		"grep_app"
 		"websearch"
-		# KEEP ENABLED: context7 (library docs)
+		# KEEP ENABLED: context7 (library docs), auggie-mcp (semantic search)
 	)
 
 	local disabled=0
