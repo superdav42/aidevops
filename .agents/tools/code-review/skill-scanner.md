@@ -66,11 +66,11 @@ skills during import. CRITICAL/HIGH findings block import unless `--force`.
 aidevops skill scan
 
 # Scan specific skill
-aidevops skill scan cloudflare-platform
+aidevops skill scan cloudflare-platform-skill
 
 # Via security-helper directly
 security-helper.sh skill-scan all
-security-helper.sh skill-scan cloudflare-platform
+security-helper.sh skill-scan cloudflare-platform-skill
 ```
 
 ### Setup-time scanning
@@ -85,7 +85,7 @@ which triggers the security scan on the updated content.
 
 ### Results log
 
-Scan results are appended to `.agents/SKILL-SCAN-RESULTS.md` automatically by
+Scan results are appended to `.agents/configs/configs/SKILL-SCAN-RESULTS.md` automatically by
 `security-helper.sh skill-scan` (batch) and `add-skill-helper.sh` (per-import).
 The file contains the latest full scan summary and a history table for audit trail.
 
