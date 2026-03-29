@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.344] - 2026-03-30
+
+### Changed
+
+- Documentation: tighten architecture.md prose (157→124 lines, zero knowledge loss) (#13445)
+- Documentation: tighten session-manager.md (135→105 lines, GH#13438) (#13443)
+- Documentation: tighten ai-writing-detection.md prose (GH#13423) (#13444)
+- Documentation: tighten security-analysis.md agent doc (164→151 lines) (#13442)
+
 ## [3.5.339] - 2026-03-30
 
 ### Changed
