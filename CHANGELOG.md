@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.458] - 2026-03-30
+
+### Changed
+
+- Documentation: tighten langflow.md (162→153 lines) — DRY install steps, merge API sections, proper autolinks (#14187)
+
 ## [3.5.457] - 2026-03-30
 
 ### Changed
