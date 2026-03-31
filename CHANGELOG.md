@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.528] - 2026-03-31
+
+### Fixed
+
+- count headless worker wrappers in pulse (#14955)
+
 ## [3.5.527] - 2026-03-31
 
 ### Changed
