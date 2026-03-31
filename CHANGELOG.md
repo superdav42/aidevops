@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.521] - 2026-03-31
+
+### Fixed
+
+- backfill simplification state before complexity scan (GH#14841) (#14846)
+
 ## [3.5.520] - 2026-03-31
 
 ### Changed
