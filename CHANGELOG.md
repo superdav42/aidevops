@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.517] - 2026-03-31
+
+### Changed
+
+- Documentation: tighten api-shield-gotchas.md (51 -> 46 lines) (#14776)
+
 ## [3.5.516] - 2026-03-31
 
 ### Changed
