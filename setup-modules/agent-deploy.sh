@@ -732,6 +732,8 @@ _install_bv_tool() {
 
 # _install_beads_node_tools: install beads-ui and bdui via npm.
 # Echoes the count of tools installed to stdout.
+# All informational output (spinner, status) goes to stderr so that
+# command-substitution callers receive only the numeric count.
 _install_beads_node_tools() {
 	local count=0
 	if ! command -v npm &>/dev/null; then
@@ -740,15 +742,15 @@ _install_beads_node_tools() {
 	fi
 	setup_prompt install_web "  Install beads-ui (Web dashboard)? [Y/n]: " "Y"
 	if [[ "$install_web" =~ ^[Yy]?$ ]]; then
-		if run_with_spinner "Installing beads-ui" npm_global_install beads-ui; then
-			print_info "Run: beads-ui"
+		if run_with_spinner "Installing beads-ui" npm_global_install beads-ui 1>&2; then
+			print_info "Run: beads-ui" >&2
 			count=$((count + 1))
 		fi
 	fi
 	setup_prompt install_bdui "  Install bdui (React/Ink TUI)? [Y/n]: " "Y"
 	if [[ "$install_bdui" =~ ^[Yy]?$ ]]; then
-		if run_with_spinner "Installing bdui" npm_global_install bdui; then
-			print_info "Run: bdui"
+		if run_with_spinner "Installing bdui" npm_global_install bdui 1>&2; then
+			print_info "Run: bdui" >&2
 			count=$((count + 1))
 		fi
 	fi
