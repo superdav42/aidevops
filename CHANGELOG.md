@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.503] - 2026-03-31
+
+### Fixed
+
+- restore Tabby profile sync on Python 3.9 (#14680)
+
 ## [3.5.502] - 2026-03-31
 
 ### Changed
