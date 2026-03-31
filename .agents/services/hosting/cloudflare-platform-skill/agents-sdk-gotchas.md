@@ -1,72 +1,114 @@
-# Gotchas & Best Practices
+# Agents SDK Gotchas & Best Practices
 
-## Security and auth first
+## Security and auth
 
-- Validate/sanitize input, require WebSocket auth before `conn.accept()`, and keep secrets in env bindings.
-- Don't trust client-controlled headers blindly, expose sensitive data, or store secrets in agent/connection state.
+- Auth **before** `conn.accept()` — unauthenticated connections can read broadcasts.
+- Secrets in env bindings only; never in agent/connection state.
+- Don't trust client-controlled headers without validation.
 
 ```ts
+// ❌ conn.accept(); then check auth later
+// ✅ Validate first, accept only on success
 async onConnect(conn: Connection, ctx: ConnectionContext) {
-  const auth = ctx.request.headers.get("Authorization") ?? "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  const token = (ctx.request.headers.get("Authorization") ?? "").replace("Bearer ", "");
   if (!token || !await this.validateToken(token)) { conn.close(4001, "Unauthorized"); return; }
   conn.accept();
 }
 ```
 
-## State and SQL discipline
+## State discipline
 
-- Use `setState()` for auto-sync, keep state serializable/small, and move large data to SQL.
-- Don't mutate `this.state` directly or store functions/circular objects.
-- Initialize schema in `onStart()`, parameterize queries, and use explicit types when possible.
-- Don't interpolate user input into SQL or assume tables already exist.
+- Always `setState()` — direct `this.state` mutation skips sync to clients and persistence.
+- Keep state serializable and small; move large data to SQL storage.
+- Don't store functions, class instances, or circular references in state.
 
 ```ts
-// ❌ this.state.count++ | ✅ this.setState({...this.state, count: this.state.count + 1})
+// ❌ this.state.count++
+// ✅ this.setState({ ...this.state, count: this.state.count + 1 })
 ```
 
+### Connection state vs agent state
+
+- `conn.setState()` — per-connection metadata (userId, session token); lost on disconnect.
+- `this.setState()` — shared agent state; persisted and broadcast to all connections.
+- Don't put user-specific data in agent state or shared data in connection state.
+
+## SQL
+
+- Initialize schema in `onStart()` — tables don't exist until created.
+- Always parameterize — tagged template literals auto-escape; string interpolation does not.
+
 ```ts
-// ❌ this.sql`...WHERE id = '${userId}'` | ✅ this.sql`...WHERE id = ${userId}`
+// ❌ this.sql`...WHERE id = '${userId}'`  (SQL injection)
+// ✅ this.sql`...WHERE id = ${userId}`     (parameterized)
+```
+
+## Routing and entry point
+
+- `routeAgentRequest()` in the Worker `fetch` handler is required to route requests to agent DOs. Missing it = "Agent not found" errors.
+
+```ts
+// ❌ export default { fetch(req, env) { return new Response("ok"); } }
+// ✅ export default { fetch(req, env, ctx) { return routeAgentRequest(req, env) ?? new Response("Not found", { status: 404 }); } }
 ```
 
 ## WebSocket lifecycle
 
-- Call `conn.accept()` promptly, handle errors, and clean up on disconnect.
-- Don't assume persistence or keep sensitive data in connection state.
+- Call `conn.accept()` promptly — delayed accept causes client-side timeout.
+- Handle `onClose`/`onError` for cleanup; don't assume connections persist across hibernation.
+- Connection state survives hibernation; in-memory variables do not.
+
+## Scheduling
+
+- 1 alarm per DO — `setAlarm()` overwrites any existing alarm.
+- Alarm handlers have a 15-minute wall-clock limit; retries use exponential backoff (max 6 attempts).
+- Use `schedule()` for cron-like patterns; use `setAlarm()` for one-shot delayed work.
+
+## AI and performance
+
+- Use AI Gateway for caching, streaming, and rate limiting.
+- Wrap model calls in `try/catch` with fallbacks for quota/timeout/provider errors.
+- Batch `setState()` calls; reduce write frequency; limit broadcast fan-out with backpressure.
 
 ```ts
-async onConnect(conn: Connection, ctx: ConnectionContext) { conn.accept(); conn.setState({sessionRef: "sess_abc123"}); }
+try { return await this.env.AI.run(model, { prompt }); }
+catch { return { error: "Unavailable" }; }
 ```
 
-## Scheduling constraints
+## Runtime limits
 
-- Only 1 alarm exists per DO; a new `setAlarm()` overwrites the prior alarm.
-- Retries use exponential backoff for up to 6 attempts, and alarm handlers have a 15-minute wall-clock limit.
-- Clean stale schedules, use descriptive names, and handle failures.
+| Resource | Limit |
+|----------|-------|
+| CPU | 30s/request (up to 5 min via `limits.cpu_ms`) |
+| Memory | 128 MB/instance |
+| WebSocket connections | 32,768/DO (practical limit lower) |
+| Alarms | 1 per DO |
+| SQL storage | Shares DO 10 GB quota |
 
-```ts
-async checkSchedules() { const schedules = await this.getSchedules(); if (schedules.length > 0) console.log("Active schedule:", schedules[0]); }
-```
+## Migration
 
-## AI reliability and performance
-
-- Prefer AI Gateway cache, streaming, and rate limiting.
-- Wrap model calls in `try/catch` with quota/timeout/provider fallbacks.
-- Batch `setState()` writes, reduce write frequency, and limit broadcast fan-out with backpressure/selective sends.
-
-```ts
-try { return await this.env.AI.run(model, {prompt}); } catch (e) { return {error: "Unavailable"}; }
-```
-
-## Limits, debugging, and migration
-
-- Runtime limits: CPU 30s/request (configurable to 5 min via `limits.cpu_ms`), memory 128MB/instance, SQL shares DO quota, 1 alarm/DO, max 32,768 WebSocket connections/DO; practical limits are lower due to CPU/memory.
-- Debug with `npx wrangler dev` locally and `npx wrangler tail` remotely.
-- Common failures: "Agent not found" (DO binding), state not syncing (`setState()`), connect timeout (`conn.accept()`), startup SQL errors (`onStart()` init).
-- SQLite backend migrations must enable `new_sqlite_classes` when the class is first created; you cannot add it to an existing deployed class. Test in staging; delete migrations are destructive and permanent.
+- `new_sqlite_classes` must be set when the class is **first created** — cannot add SQLite to an existing deployed class.
+- `deleted_classes` destroys all data permanently; no rollback.
+- Test migrations in staging with `--dry-run`.
 
 ```toml
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["MyAgent"]
+```
+
+## Common failures
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| "Agent not found" | Missing DO binding or `routeAgentRequest()` | Check `wrangler.toml` bindings and Worker entry point |
+| State not syncing | Direct `this.state` mutation | Use `setState()` |
+| Connect timeout | Delayed `conn.accept()` | Call `conn.accept()` immediately in `onConnect` |
+| SQL errors on start | Missing `onStart()` schema init | Create tables in `onStart()` |
+
+## Debugging
+
+```bash
+npx wrangler dev          # Local development
+npx wrangler tail         # Stream remote logs
 ```
