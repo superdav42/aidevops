@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.471] - 2026-03-31
+
+### Changed
+
+- Documentation: restore explanatory intros in es2016-es2017.md (#14504)
+
 ## [3.5.470] - 2026-03-31
 
 ### Changed
