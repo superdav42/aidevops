@@ -34,44 +34,12 @@ seo-analysis-helper.sh example.com summary            # Data summary
 
 ## Analysis Types
 
-### Quick Wins
-**Criteria**: Position 4–20, Impressions > 100 — page 1–2 keywords that could rank higher with small improvements.
-
-**Actions**: Optimize title/meta, add internal links from high-authority pages, improve content depth, add schema markup.
-
-**Scoring**: Higher impressions + closer to position 4 = higher score.
-
-### Striking Distance
-**Criteria**: Position 11–30, Volume > 500 — keywords just off page 1 with significant volume.
-
-**Actions**: Expand content, build backlinks, improve Core Web Vitals, add topic cluster support.
-
-**Scoring**: `volume × (31 - position)`
-
-### Low CTR
-**Criteria**: CTR < 2%, Impressions > 500, Position ≤ 10 — ranking well but not getting clicks.
-
-**Actions**: Rewrite title tags, improve meta descriptions with CTAs, add structured data, check SERP feature opportunities (FAQ, How-to).
-
-**Potential**: `impressions × 5%` (target CTR)
-
-### Content Cannibalization
-**Criteria**: Same query ranking with multiple URLs — dilutes ranking signals.
-
-**Actions**: Merge into single authoritative page, add canonicals to secondary pages, differentiate intent, use 301 redirects.
-
-**Detection**: Groups queries by normalized text; flags those with 2+ unique URLs.
-
-## Thresholds
-
-| Analysis | Parameter | Default |
-|----------|-----------|---------|
-| Quick Wins | Position range | 4–20 |
-| Quick Wins | Min Impressions | 100 |
-| Striking Distance | Position range | 11–30 |
-| Striking Distance | Min Volume | 500 |
-| Low CTR | Max CTR | 0.02 (2%) |
-| Low CTR | Min Impressions | 500 |
+| Type | Criteria | Actions | Scoring |
+|------|----------|---------|---------|
+| **Quick Wins** | Position 4–20, Impressions > 100 | Optimize title/meta, add internal links from high-authority pages, improve content depth, add schema markup | Higher impressions + closer to position 4 = higher score |
+| **Striking Distance** | Position 11–30, Volume > 500 | Expand content, build backlinks, improve Core Web Vitals, add topic cluster support | `volume × (31 - position)` |
+| **Low CTR** | CTR < 2%, Impressions > 500, Position ≤ 10 | Rewrite title tags, improve meta descriptions with CTAs, add structured data, check SERP features (FAQ, How-to) | Potential: `impressions × 5%` (target CTR) |
+| **Cannibalization** | Same query ranking with multiple URLs | Merge into single authoritative page, add canonicals, differentiate intent, use 301 redirects | Groups queries by normalized text; flags 2+ unique URLs |
 
 ## Output Format
 
@@ -107,7 +75,7 @@ seo tools	/blog/tools,/guides/seo	8.2,15.3	2
 
 ## Multi-Source
 
-GSC provides click/impression data; Ahrefs/DataForSEO provide volume and difficulty; Bing provides additional coverage. When the same query appears in multiple sources, all instances are considered for cannibalization detection.
+GSC provides click/impression data; Ahrefs/DataForSEO provide volume and difficulty; Bing provides additional coverage. Same query across multiple sources → all instances considered for cannibalization detection.
 
 ## Integration
 
@@ -120,4 +88,4 @@ seo-analysis-helper.sh example.com quick-wins
 cat analysis-*.toon | awk -F'\t' 'NF>1{print}' > analysis.csv
 ```
 
-Use analysis results to prioritize content work: quick wins → update existing content; striking distance → expand content; cannibalization → consolidate pages.
+Prioritize content work: quick wins → update existing; striking distance → expand; cannibalization → consolidate.
