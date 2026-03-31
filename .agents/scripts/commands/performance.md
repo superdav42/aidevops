@@ -8,46 +8,34 @@ Analyze web performance for the specified URL using Chrome DevTools MCP.
 
 URL/Target: $ARGUMENTS
 
-## Workflow
-
-### Step 1: Parse Arguments
-
-```text
-Default: Full audit (performance + accessibility + network)
-Options:
-  --categories=performance,accessibility,network  Specific categories
-  --device=mobile|desktop         Device emulation (default: mobile)
-  --iterations=N                  Number of runs for averaging (default: 3)
-  --compare=baseline.json         Compare against baseline
-  --local                         Assume localhost URL
-```
-
-### Step 2: Check Prerequisites
+## Prerequisites
 
 ```bash
-# Verify Chrome DevTools MCP is available
 which npx && npx chrome-devtools-mcp@latest --version || echo "Install: npm i -g chrome-devtools-mcp"
 ```
 
-### Step 3: Read Performance Subagent
+Read `~/.aidevops/agents/tools/performance/performance.md` for CWV thresholds, common issues, and fix patterns.
 
-Read `~/.aidevops/agents/tools/performance/performance.md` for:
-- Core Web Vitals thresholds
-- Common issues and fixes
-- Actionable output format
+## Options
 
-### Step 4: Run Analysis
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--categories=performance,accessibility,network` | all | Specific categories |
+| `--device=mobile\|desktop` | mobile | Device emulation |
+| `--iterations=N` | 3 | Runs to average |
+| `--compare=baseline.json` | — | Compare against baseline |
+| `--local` | — | Assume localhost URL |
 
-Using Chrome DevTools MCP:
+## Run Analysis
 
-1. **Lighthouse Audit** - Performance, accessibility, best practices, SEO scores
-2. **Core Web Vitals** - FCP, LCP, CLS, FID, TTFB measurements
-3. **Network Analysis** - Third-party scripts, request chains, bundle sizes
-4. **Accessibility Check** - WCAG compliance issues
+Using Chrome DevTools MCP, execute in order:
 
-### Step 5: Generate Report
+1. **Lighthouse Audit** — performance, accessibility, best practices, SEO scores
+2. **Core Web Vitals** — FCP, LCP, CLS, FID, TTFB measurements
+3. **Network Analysis** — third-party scripts, request chains, bundle sizes
+4. **Accessibility** — WCAG compliance issues
 
-Output in actionable format:
+## Report Format
 
 ```markdown
 ## Performance Report: [URL]
@@ -61,49 +49,29 @@ Output in actionable format:
 | TTFB | Xms | GOOD/NEEDS WORK/POOR | <800ms |
 
 ### Top Issues (Priority Order)
-1. **Issue** - Description
-   - File: `path/to/file:line`
-   - Fix: Specific recommendation
+1. **Issue** — File: `path/to/file:line` — Fix: specific recommendation
 
 ### Network Dependencies
-- X third-party scripts
-- Longest chain: X requests
-- Total blocking time: Xms
+- X third-party scripts; longest chain: X requests; total blocking time: Xms
 
 ### Accessibility
-- Score: X/100
-- X issues found
+- Score: X/100 — X issues found
 ```
 
-### Step 6: Provide Fixes
-
-For each issue, provide:
-1. **What**: The specific problem
-2. **Where**: File path and line number (if in repo)
-3. **How**: Code snippet or configuration change
-4. **Impact**: Expected improvement
+For each issue: **What** (problem), **Where** (file path), **How** (code/config fix), **Impact** (expected improvement).
 
 ## Examples
 
 ```bash
-# Full audit of production site
-/performance https://example.com
-
-# Local dev server
-/performance http://localhost:3000 --local
-
-# Mobile-specific audit
-/performance https://example.com --device=mobile
-
-# Compare against baseline
-/performance https://example.com --compare=baseline.json
-
-# Specific categories only
+/performance https://example.com                                    # full audit
+/performance http://localhost:3000 --local                          # local dev
+/performance https://example.com --device=mobile                    # mobile only
+/performance https://example.com --compare=baseline.json            # diff baseline
 /performance https://example.com --categories=performance,accessibility
 ```
 
 ## Related
 
-- `tools/performance/performance.md` - Full performance subagent
-- `tools/browser/pagespeed.md` - PageSpeed Insights integration
-- `tools/browser/chrome-devtools.md` - Chrome DevTools MCP
+- `tools/performance/performance.md` — full performance subagent
+- `tools/browser/pagespeed.md` — PageSpeed Insights integration
+- `tools/browser/chrome-devtools.md` — Chrome DevTools MCP
