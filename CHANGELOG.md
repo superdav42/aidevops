@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.532] - 2026-03-31
+
+### Changed
+
+- Documentation: tighten SRO Grounding agent doc (GH#14210) (#14919)
+- Maintenance: claim t1711
+
 ## [3.5.531] - 2026-03-31
 
 ### Changed
