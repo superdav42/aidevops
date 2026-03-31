@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.524] - 2026-03-31
+
+### Changed
+
+- Documentation: tighten Hyperdrive agent doc (GH#14399) (#14900)
+- Documentation: tighten Socket MCP agent doc (#14882)
+- Documentation: tighten fallback-chains.md agent doc (GH#14190) (#14878)
+
+### Fixed
+
+- harden deterministic pulse fill floor counts (#14840)
+
 ## [3.5.523] - 2026-03-31
 
 ### Changed
