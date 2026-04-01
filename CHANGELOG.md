@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.550] - 2026-04-01
+
+### Fixed
+
+- stop false provider backoff from local/worker failures (#15108)
+
 ## [3.5.549] - 2026-04-01
 
 ### Fixed
