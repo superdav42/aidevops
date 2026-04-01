@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.541] - 2026-04-01
+
+### Changed
+
+- Maintenance: add Claude CLI alignment comments to oauth-pool-helper.sh (#15063)
+
 ## [3.5.540] - 2026-04-01
 
 ### Changed
