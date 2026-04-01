@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.547] - 2026-04-01
+
+### Fixed
+
+- pre-dispatch backoff check — don't launch workers on dead providers (#15097)
+- align output format fields with mission-orchestrator expectations (#14863)
+
 ## [3.5.546] - 2026-04-01
 
 ### Fixed
