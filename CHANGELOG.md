@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.596] - 2026-04-02
+
+### Changed
+
+- plan Linux/WSL2 platform support — brief and TODO entry
+
+### Fixed
+
+- make changelog entries self-explanatory by resolving task IDs (#15392)
+
 ## [3.5.555] - 2026-04-01
 
 ### Changed
