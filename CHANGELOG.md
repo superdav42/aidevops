@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.552] - 2026-04-01
+
+### Fixed
+
+- activity watchdog exit code race condition (#15120)
+
 ## [3.5.551] - 2026-04-01
 
 ### Fixed
