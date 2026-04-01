@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.544] - 2026-04-01
+
+### Changed
+
+- Maintenance: claim t1714
+- Documentation: tighten wrangler-patterns.md — remove duplication with sibling files (#13672)
+- Documentation: tighten cloudron-server-ops-skill.md (142→118 lines, GH#13704) (#13716)
+- Documentation: tighten revenuecat.md agent doc (158 → 152 lines) (#13748)
+- Documentation: tighten concurrency.md agent doc (221 -> 169 lines) (#13749)
+- Documentation: tighten feature-slicing migration.md (159→148 lines, regression fix) (#13761)
+- Documentation: tighten drizzle.md (132→122 lines) (#13770)
+- Documentation: tighten cro-chapter-25.md — remove structural noise and redundant prose (#13863)
+- Documentation: tighten meta-ads-foundations-algorithm.md — remove structural noise (#13898)
+- Documentation: tighten CRO chapter 02 — compress prose, preserve all knowledge (#13966)
+- Documentation: tighten video-higgsfield-ui.md (188→158 lines) — remove redundant CLI Options table, compress prompt tips and prose (#14049)
+- Documentation: tighten hexagonal.md 181→160 lines — flatten mermaid nesting, compress code blocks, remove redundant path comments (GH#14040) (#14061)
+- Documentation: tighten playwright-emulation.md (175→153 lines) — merge config blocks, consolidate touch into options, remove redundant multi-device recipe (#14062)
+- Documentation: tighten security.md (106→80 lines, 25% reduction) (#14086)
+- Documentation: tighten agent-browser.md (170→161 lines) — merge Sessions+Wait sections, fold iOS env vars into code block, move License to Quick Reference (#14115)
+- Documentation: tighten hashline-edit-format.md (139→135 lines, zero knowledge loss) (#14127)
+- Documentation: tighten research.md (113→106 lines) — clarify section semantics, compact sufficiency test (#14159)
+- Documentation: tighten sandbox-patterns.md — remove structural noise, preserve all knowledge (#14161)
+- Documentation: tighten serper.md (114→101 lines) — DRY curl headers, reorder by importance (#14188)
+- Documentation: tighten turborepo.md (137→122 lines) (#14205)
+- Maintenance: tighten bash-compat.md agent doc (105→77 lines) (#14221)
+- Documentation: tighten axe-cli.md (114→102 lines) — merge buttons into keyboard section, compress code comments, remove redundant Quick Reference lines (#14266)
+- Documentation: tighten smart-placement.md (90→79 lines) and deduplicate gotchas (87→72 lines) (#14301)
+- Documentation: tighten hyperdrive-patterns.md — remove structural noise, preserve all knowledge (#14376)
+- Documentation: tighten r2-gotchas.md — remove structural noise, merge common errors into sections (94→82 lines) (#14377)
+- Documentation: tighten budget-analysis.md — remove structural noise, compress prose (63→50 lines) (#14396)
+- Documentation: tighten pages-functions.md — compress prose, fix See Also links (57→49 lines) (#14432)
+- Refactor: split _install_pulse_launchd into focused subfunctions (#14493)
+- Documentation: tighten extraction-workflow.md prose without knowledge loss (#14506)
+- Documentation: tighten es2016-es2017.md reference doc (#14508)
+- Documentation: tighten Stagehand benchmark scripts agent doc (#14537)
+- Documentation: tighten Amazon SES provider guide (GH#14007) (#14540)
+- Documentation: tighten model-routing.md (135→111 lines, zero info loss) (#14555)
+- Documentation: tighten services.md prose (7.6% byte reduction, zero knowledge loss) (#14556)
+- Documentation: tighten app-dev-testing.md agent doc (131→115 lines) (#14563)
+- Documentation: tighten ahrefs integration quick reference (#14568)
+- Documentation: tighten email sequences framework agent doc (#14569)
+- Documentation: tighten toon.md - remove redundant description line (#14583)
+- Documentation: tighten durable-objects.md and fix broken internal links (#14584)
+- Maintenance: tighten agent doc legal.md (128→86 lines) (#14597)
+- Maintenance: merge cheatsheet-queries.md into queries.md, remove duplicate (#14600)
+- Documentation: tighten LinkedIn Content Subagent agent doc (#14640)
+- Documentation: tighten api-shield-patterns.md (127→101 lines) (#14641)
+- Documentation: tighten browser-benchmark.md (125 → 86 lines) (#14667)
+- Maintenance: tighten agent sources doc (#14684)
+- Maintenance: tighten conversation starter prompt flow (#14689)
+- Documentation: tighten mutations cheatsheet (65→56 lines) (#14691)
+- Maintenance: tighten campaign launch checklist (#14699)
+
+### Fixed
+
+- add session-level account affinity to prevent cross-session token overwrites (t1714) (#15079)
+- address PR #14278 review feedback on maintainer-gate.yml (#14443)
+- handle missing paths during setup backup rotation (#14632)
+
 ## [3.5.543] - 2026-04-01
 
 ### Changed
