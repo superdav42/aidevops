@@ -2,9 +2,9 @@
   "_comment": null,
   "files": {
     ".agents/marketing-sales/cro-chapter-22.md": {
-      "hash": "b8d6933fdbfbfcc9ba3ea7a8b8b8031a3e7c2f9b",
-      "at": "2026-04-01T12:00:00Z",
-      "pr": 15177
+      "hash": "882c97fc64eb63b11312049223c04eaa52882296",
+      "at": "2026-04-01T20:58:50Z",
+      "pr": 15257
     },
     ".agents/tools/browser/browser-benchmark-scripts-05-stagehand.md": {
       "hash": "8d79ff6b9aa02ab04c5f72924b3a7798ee561893",
@@ -1072,9 +1072,9 @@
       "pr": 14484
     },
     ".agents/scripts/commands/postflight-loop.md": {
-      "hash": "2691eaecbdc82f96bb0368fc04ebdfcfebc65153",
-      "at": "2026-03-31T06:26:08Z",
-      "pr": 14692
+      "hash": "37a467bf622640eb6c8d75aa2c1de45c9a27c61c",
+      "at": "2026-04-01T20:59:31Z",
+      "pr": 14942
     },
     ".agents/scripts/commands/routine.md": {
       "hash": "3f41b68e706f479c75df03b199f4b7c8a027644d",
@@ -1482,9 +1482,9 @@
       "pr": 12145
     },
     ".agents/scripts/pulse-wrapper.sh": {
-      "hash": "3fceee99ce88bbc7e2a79dd591483b383ea98805",
-      "at": "2026-03-29T16:31:29Z",
-      "pr": 13117
+      "hash": "b8f6897def4abd7a93b3a3620a1522d83c7b6b8c",
+      "at": "2026-04-01T20:59:23Z",
+      "pr": 15086
     },
     ".agents/tools/browser/stagehand-python.md": {
       "hash": "2a7d864c02279238b1f773c390f7ffe011c6f9d6",
@@ -2717,9 +2717,9 @@
       "pr": 14662
     },
     ".agents/marketing-sales/direct-response-copy-swipe-file-emails-03-sales.md": {
-      "hash": "0a96775e8682e8b03590b673f9c8180c5cc99908",
-      "at": "2026-03-29T22:09:33Z",
-      "pr": 13317
+      "hash": "7f8943efbe9c5d05b7ecba869a866d6020b95928",
+      "at": "2026-04-01T20:59:18Z",
+      "pr": 15150
     },
     ".agents/tools/browser/extension-dev.md": {
       "hash": "5d6ac2671414bfdce4481294fce9019711d28c01",
@@ -3012,9 +3012,9 @@
       "pr": 13766
     },
     ".agents/marketing-sales/meta-ads-foundations-algorithm.md": {
-      "hash": "828137de39a32fce04d3952d5dc3974de230a225",
-      "at": "2026-03-30T06:50:26Z",
-      "pr": 13730
+      "hash": "318e59fc49106e5aaeeca2d26e666b87b0353d5c",
+      "at": "2026-04-01T20:59:13Z",
+      "pr": 15138
     },
     ".agents/services/hosting/cloudflare-platform-skill/sandbox-gotchas.md": {
       "hash": "a0b18de39a54d95b1d687b669e01308b2333655f",
@@ -3132,9 +3132,9 @@
       "pr": 14701
     },
     ".agents/tools/vision/overview.md": {
-      "hash": "e760976eca7d7c554a6e625d70816805258ebcb1",
-      "at": "2026-03-31T08:01:28Z",
-      "pr": 14726
+      "hash": "5abddf3f89fc529bd3119b8ae147961451728199",
+      "at": "2026-04-01T20:59:38Z",
+      "pr": 14932
     },
     ".agents/tools/ai-assistants/datasets.md": {
       "hash": "4d6b7f27d34a145fddf6bc662ce9fe4ca289f7e6b78f29add65726d7bae2db3f",
@@ -3142,14 +3142,239 @@
       "pr": 14823
     },
     ".agents/tools/automation/mac.md": {
-      "hash": "bbb8afdf33120ef89a7bec1bd5cdc14493d72bc4",
-      "at": "2026-04-01T00:00:00Z",
-      "pr": 15178
+      "hash": "1dc19ae4b63343bb6f8a397a6f7e824655e2f986",
+      "at": "2026-04-01T20:58:52Z",
+      "pr": 15253
     },
     ".agents/scripts/commands/list-verify.md": {
       "hash": "70b9ea13391fe10fb6a74157f8c68e1c4e784d47b9744d217fc3507d744006c9",
       "at": "2026-04-01T19:51:55Z",
       "pr": 15247
+    },
+    ".agents/scripts/commands/budget-analysis.md": {
+      "hash": "ac77aaf850ecc1f9cee81c9e04a026a954fc7359",
+      "at": "2026-04-01T20:58:50Z",
+      "pr": 15257
+    },
+    "todo/tasks/t15173-brief.md": {
+      "hash": "41ca6c208c2f6e8349d73a1ec55e0a26fd26f974",
+      "at": "2026-04-01T20:58:50Z",
+      "pr": 15257
+    },
+    ".agents/health.md": {
+      "hash": "301b928aef5da6cc3a1dbb353077bfbab47af315",
+      "at": "2026-04-01T20:58:58Z",
+      "pr": 15249
+    },
+    ".agents/tools/ai-assistants/models-README.md": {
+      "hash": "0fe4c51c744b0e1ee3081af1b83ca6c66229a4a4",
+      "at": "2026-04-01T20:58:59Z",
+      "pr": 15227
+    },
+    ".agents/tools/ai-assistants/claude-code.md": {
+      "hash": "dd9666e19eb7e98df75856dd477ecf7ceebf147a",
+      "at": "2026-04-01T20:59:01Z",
+      "pr": 15204
+    },
+    ".agents/aidevops/self-improving-agents.md": {
+      "hash": "8e8dc0f8fa3a1a502130a64f217de014a5b14161",
+      "at": "2026-04-01T20:59:02Z",
+      "pr": 15203
+    },
+    ".agents/workflows/branch/hotfix.md": {
+      "hash": "e1c1f9099b46c798fe473a7c23ff01bfa8e26b70",
+      "at": "2026-04-01T20:59:04Z",
+      "pr": 15209
+    },
+    ".agents/tools/mobile/app-dev-testing.md": {
+      "hash": "39d2e16ec10aee6ed51d5a9b586e20ac0ba4276a",
+      "at": "2026-04-01T20:59:09Z",
+      "pr": 15219
+    },
+    ".agents/marketing-sales/cro-chapter-18.md": {
+      "hash": "4111c2a2ec25f39fecd814fc065f58ac91c263b0",
+      "at": "2026-04-01T20:59:11Z",
+      "pr": 15220
+    },
+    ".agents/marketing-sales/cro-chapter-02.md": {
+      "hash": "8226a4d2cd57afce1746318203d9c357540010c2",
+      "at": "2026-04-01T20:59:14Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/01-conversion-rate-formulas.md": {
+      "hash": "3ffbf75893700060301c26dd5fd2c63e6743bddc",
+      "at": "2026-04-01T20:59:14Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/02-psychology-of-conversion.md": {
+      "hash": "497b1a2f35082225ace6ac18531c3b83d25fd39f",
+      "at": "2026-04-01T20:59:14Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/03-conversion-funnel.md": {
+      "hash": "20a9a226559ee7acc643d4b1b73a44d3f735e87d",
+      "at": "2026-04-01T20:59:14Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/04-attribution-models.md": {
+      "hash": "48f7749c53ee973531130209345c214c0d77b181",
+      "at": "2026-04-01T20:59:15Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/05-website-elements.md": {
+      "hash": "786c51eec79c4098d2034c43c8dd98c1077043e0",
+      "at": "2026-04-01T20:59:15Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/06-conversion-friction.md": {
+      "hash": "60a0019275f9e3b20f3e9dba68b8d52f6782199c",
+      "at": "2026-04-01T20:59:15Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/cro-chapter-02/07-data-foundation.md": {
+      "hash": "58055a16f3affa58e9372abe6c4108cc7d0b196c",
+      "at": "2026-04-01T20:59:15Z",
+      "pr": 15223
+    },
+    "todo/tasks/t1737-brief.md": {
+      "hash": "e33e6f68fa6cdb89368aa5ec65bd3e1bc880ba67",
+      "at": "2026-04-01T20:59:15Z",
+      "pr": 15223
+    },
+    ".agents/marketing-sales/direct-response-copy-swipe-file-emails-03-sales-06-ramit-sethi-launch.md": {
+      "hash": "5f82f7b17f7fde8daeb703ca4c3cdcef53620c2f",
+      "at": "2026-04-01T20:59:17Z",
+      "pr": 15150
+    },
+    ".agents/marketing-sales/direct-response-copy-swipe-file-emails-03-sales-07-saas-trial-expiry.md": {
+      "hash": "541a34d7b2649c4e93f494af26bb412731aace9e",
+      "at": "2026-04-01T20:59:17Z",
+      "pr": 15150
+    },
+    ".agents/marketing-sales/direct-response-copy-swipe-file-emails-03-sales-08-cart-abandonment.md": {
+      "hash": "2c4d31ad777c8c70b5293c3fd75e4e6af67b4654",
+      "at": "2026-04-01T20:59:17Z",
+      "pr": 15150
+    },
+    ".agents/marketing-sales/direct-response-copy-swipe-file-emails-03-sales-09-webinar-invite.md": {
+      "hash": "5dd410cda93d3056b39408c537fb3c9b1e1e06da",
+      "at": "2026-04-01T20:59:17Z",
+      "pr": 15150
+    },
+    ".agents/marketing-sales/meta-ads-checklists-campaign-launch.md": {
+      "hash": "3f199a8eb517a651781b683ec0d6a723fb16d9b0",
+      "at": "2026-04-01T20:59:20Z",
+      "pr": 15149
+    },
+    ".agents/scripts/headless-runtime-helper.sh": {
+      "hash": "b275a61c57927dfe2366d4f9c67881947debf25b",
+      "at": "2026-04-01T20:59:22Z",
+      "pr": 15086
+    },
+    ".agents/tools/programming/modern-javascript-skill.md": {
+      "hash": "3c3730959a3c618e3b3ed96d1ccd5eb95c2bfe3b",
+      "at": "2026-04-01T20:59:25Z",
+      "pr": 15131
+    },
+    ".agents/tools/programming/modern-javascript-skill/01-decision-trees.md": {
+      "hash": "80190196c391d4314e034455e46fe218d57d1c58",
+      "at": "2026-04-01T20:59:25Z",
+      "pr": 15131
+    },
+    ".agents/tools/programming/modern-javascript-skill/02-es-versions.md": {
+      "hash": "8c9215cc4697a3cd21125445386a8315acb42e0d",
+      "at": "2026-04-01T20:59:25Z",
+      "pr": 15131
+    },
+    ".agents/scripts/commands/security-deps.md": {
+      "hash": "265f2d26f358ffb425e374dca8aa76a7c20c3565",
+      "at": "2026-04-01T20:59:27Z",
+      "pr": 14994
+    },
+    ".agents/marketing-sales/direct-response-copy-checklists-pre-publish.md": {
+      "hash": "ab1f9c5d69340fa7acfd756c2ae37710b9fa600c",
+      "at": "2026-04-01T20:59:28Z",
+      "pr": 14996
+    },
+    ".agents/research.md": {
+      "hash": "b509e2fae5168065f0142ae29dca1ec2d410c53b",
+      "at": "2026-04-01T20:59:28Z",
+      "pr": 14996
+    },
+    ".agents/workflows/mission-skill-learning.md": {
+      "hash": "dd665af8ed215a57226bbb176cee5ee5a552ee65",
+      "at": "2026-04-01T20:59:28Z",
+      "pr": 14996
+    },
+    "todo/tasks/GH-14990-brief.md": {
+      "hash": "05e0636373c9b4574f9b289b7e75180281b462e4",
+      "at": "2026-04-01T20:59:29Z",
+      "pr": 14996
+    },
+    ".agents/prompts/worker-efficiency-protocol.md": {
+      "hash": "b601e50f903b0b94e2a1021a296e595f350e85f1",
+      "at": "2026-04-01T20:59:34Z",
+      "pr": 14943
+    },
+    ".agents/scripts/commands/venv-health.md": {
+      "hash": "bbcc15a86e165230f04159f127a8dc6a52160b30",
+      "at": "2026-04-01T20:59:35Z",
+      "pr": 14968
+    },
+    ".agents/seo/ai-search-kpi-template.md": {
+      "hash": "b750815aa689ad99b32c355078ef3d168b489789",
+      "at": "2026-04-01T20:59:36Z",
+      "pr": 14969
+    },
+    ".agents/tools/ai-assistants/models-sonnet.md": {
+      "hash": "035dfbf3d02fc552dd1f4dab55ea1bf70331e2b1",
+      "at": "2026-04-01T20:59:40Z",
+      "pr": 14913
+    },
+    ".agents/services/hosting/cloudflare-platform-skill/network-interconnect.md": {
+      "hash": "a87bdad3db117a280177a98592d12acba7a2e676",
+      "at": "2026-04-01T20:59:42Z",
+      "pr": 14916
+    },
+    ".agents/services/hosting/cloudflare-platform-skill/r2.md": {
+      "hash": "c0c080bb82f1488a996f7cf50c231ac89179bc6f",
+      "at": "2026-04-01T20:59:44Z",
+      "pr": 14914
+    },
+    ".agents/scripts/commands/list-todo.md": {
+      "hash": "351180b6d47cacee5be38fc9e3ec01f7d1fd8661",
+      "at": "2026-04-01T20:59:47Z",
+      "pr": 14898
+    },
+    ".agents/tools/video/remotion-3d.md": {
+      "hash": "054778cef20067cd0e02cbd7b049333f562e6e4a",
+      "at": "2026-04-01T20:59:48Z",
+      "pr": 14897
+    },
+    ".agents/services/monitoring/socket.md": {
+      "hash": "788506798f5a1eedd29bb5d84aaa61a758c1acd8",
+      "at": "2026-04-01T20:59:50Z",
+      "pr": 14896
+    },
+    ".agents/tools/deployment/cloudron-app-packaging-skill.md": {
+      "hash": "0895bca6f21b082551b21fa7765569599eb36e95",
+      "at": "2026-04-01T20:59:51Z",
+      "pr": 14880
+    },
+    ".agents/tools/video/remotion-timing.md": {
+      "hash": "6213ebf1e87a77cab44febc35ec0a3b10fd2db4c",
+      "at": "2026-04-01T20:59:53Z",
+      "pr": 14881
+    },
+    ".agents/tools/video/remotion-transitions.md": {
+      "hash": "f643aa12a96105bd68286a55958c88444a7d235e",
+      "at": "2026-04-01T20:59:54Z",
+      "pr": 14883
+    },
+    ".agents/marketing-sales/direct-response-copy-frameworks-landing-page-structure.md": {
+      "hash": "4c6d024fd0bd6ab3cbc9881e5cd83bd7dec582e4",
+      "at": "2026-04-01T21:00:01Z",
+      "pr": 14853
     }
   }
 }
