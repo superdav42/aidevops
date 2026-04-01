@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.555] - 2026-04-01
+
+### Changed
+
+- Maintenance: claim t1734
+- Maintenance: claim t1733
+
+### Fixed
+
+- resilient token rotation — wait instead of crashing on exhaustion (#15183)
+
 ## [3.5.554] - 2026-04-01
 
 ### Changed
