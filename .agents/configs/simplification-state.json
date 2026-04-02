@@ -743,7 +743,7 @@
       "hash": "347272e46c7d04f05dd13a4683cf44bef0dd3da7",
       "issue": "GH#14286",
       "passes": 2,
-      "note": "Reference corpus chapter tightened: 92 \u2192 90 lines. Removed decorative closing sentence with no information value. Zero content loss."
+      "note": "Reference corpus chapter tightened: 92 → 90 lines. Removed decorative closing sentence with no information value. Zero content loss."
     },
     ".agents/marketing-sales/cro-chapter-20.md": {
       "at": "2026-03-29T16:34:29Z",
@@ -4385,15 +4385,15 @@
       "pr": 15490
     },
     "aidevops.sh": {
-      "at": "2026-04-02T21:58:16Z",
-      "hash": "581a18eb11fbaa0f69e30edf1a79a00fda28e715",
-      "passes": 12,
+      "at": "2026-04-02T22:44:02Z",
+      "hash": "4ae644881ead1d1ca26be6ca5c465284fcc84afe",
+      "passes": 13,
       "pr": 15470
     },
     "setup.sh": {
-      "at": "2026-04-02T21:58:16Z",
-      "hash": "ce58c8fa7eccd663a4fbf811b0916e9495aa2bb7",
-      "passes": 12,
+      "at": "2026-04-02T22:44:02Z",
+      "hash": "171575babb9f77bfbcb24099945ec9e90ef346de",
+      "passes": 13,
       "pr": 15470
     },
     "todo/tasks/GH#15363-brief.md": {
@@ -4667,8 +4667,28 @@
       "passes": 1
     },
     ".agents/scripts/watercrawl-helper.sh": {
-      "hash": "fd37aa9ff783eede37a33ef77cfe72b6375834d54dc0b7c7d39045615d39d7c7",
-      "status": "simplified"
+      "hash": "27e5853c455180c533e572d91d47769062d78519",
+      "status": "simplified",
+      "at": "2026-04-02T22:43:46Z",
+      "passes": 1
+    },
+    ".agents/tools/browser/playwright-emulation.md": {
+      "hash": "1fdc5a4f08a4e9ba8ebc3550ade50c4876b949d7",
+      "at": "2026-04-02T22:44:04Z",
+      "pr": 15692,
+      "passes": 1
+    },
+    ".agents/services/hosting/cloudflare-platform-skill/tunnel-gotchas.md": {
+      "hash": "1a9ebfb7d88fdd954fa0ca93d3a4dffa7e24c461",
+      "at": "2026-04-02T22:44:04Z",
+      "pr": 15666,
+      "passes": 1
+    },
+    ".agents/seo/rich-results.md": {
+      "hash": "96226173e887aebf71287a803541f50f5b89d1c8",
+      "at": "2026-04-02T22:44:04Z",
+      "pr": 15665,
+      "passes": 1
     }
   }
 }
