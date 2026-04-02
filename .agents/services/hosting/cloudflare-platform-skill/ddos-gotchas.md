@@ -23,30 +23,23 @@ const config = {
 
 ## False Positives
 
-Legitimate traffic blocked/challenged. Diagnose via GraphQL API:
+Legitimate traffic blocked/challenged. Diagnose via GraphQL:
 
-```typescript
-const query = `
-  query {
-    viewer {
-      zones(filter: { zoneTag: "${zoneId}" }) {
-        httpRequestsAdaptiveGroups(
-          filter: { ruleId: "${ruleId}", action: "log" }
-          limit: 100
-          orderBy: [datetime_DESC]
-        ) {
-          dimensions {
-            clientCountryName
-            clientRequestHTTPHost
-            clientRequestPath
-            userAgent
-          }
-          count
-        }
+```graphql
+{
+  viewer {
+    zones(filter: { zoneTag: "<ZONE_ID>" }) {
+      httpRequestsAdaptiveGroups(
+        filter: { ruleId: "<RULE_ID>", action: "log" }
+        limit: 100
+        orderBy: [datetime_DESC]
+      ) {
+        dimensions { clientCountryName clientRequestHTTPHost clientRequestPath userAgent }
+        count
       }
     }
   }
-`;
+}
 ```
 
 Fix:
@@ -87,8 +80,6 @@ Some rules cannot be overridden — API response indicates if rule is read-only.
 2. Monitor 24-48 hours, identify false positives, add exceptions
 3. Gradually increase to `default` sensitivity
 4. Escalate action: `log` → `managed_challenge` → `block`
-5. Document all adjustments
-
-Best practices: test during low-traffic periods, use zone-level for per-site tuning, reference IP lists for easier management, set appropriate alert thresholds (avoid noise), combine with WAF for layered defense, avoid over-tuning.
+5. Document all adjustments; test during low-traffic periods; combine with WAF for layered defense
 
 See [patterns.md](./patterns.md) for progressive rollout examples.
