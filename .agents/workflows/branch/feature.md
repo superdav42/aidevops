@@ -37,16 +37,11 @@ git checkout -b feature/{description}
 
 ## Guidance
 
-- Minor-version bump applies when the branch ships user-visible capability, not internal-only maintenance.
-- For implementation patterns, see `workflows/feature-development.md`.
+Minor-version bump applies when shipping user-visible capability, not internal-only maintenance. See `workflows/feature-development.md` for implementation patterns.
 
 ## Examples
 
 ```bash
 feature/user-dashboard
-feature/export-to-csv
-```
-
-```bash
 feat: add user authentication
 ```
