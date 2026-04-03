@@ -1,4 +1,10 @@
 {
+  ".agents/services/hosting/cloudflare-platform-skill/hyperdrive-gotchas.md": {
+    "hash": "289d1ce963a8bfbb69d5199ff47d8368f19a653f67305bafd8940e7a0982c67b",
+    "issue": "GH#15925",
+    "pr": "PR#16125",
+    "status": "simplified"
+  },
   ".agents/tools/ai-orchestration/overview.md": {
     "hash": "3a63b044317f50c757951158e4e711234d09cd299f8dc557bdc5af9e580735f6",
     "issue": "GH#15266",
