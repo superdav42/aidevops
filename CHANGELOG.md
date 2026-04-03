@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.827] - 2026-04-03
+
+### Changed
+
+- Tightened git-security.md agent doc (114→108 lines) — removed redundant frontmatter defaults, out-of-scope auth examples, and redundant tool mention; zero information loss (#16442)
+
 ## [3.5.784] - 2026-04-03
 
 ### Changed
