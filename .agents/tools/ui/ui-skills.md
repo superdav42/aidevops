@@ -47,7 +47,7 @@ tools:
 - SHOULD use structural skeletons for loading states
 - MUST show errors at the action point
 - NEVER use `h-screen`
-- SHOULD use `h-dvh` instead of `h-screen`
+- MUST use `h-dvh` instead of `h-screen`
 - MUST respect `safe-area-inset` for fixed elements
 - NEVER block paste in `input` or `textarea`
 
