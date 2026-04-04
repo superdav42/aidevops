@@ -202,10 +202,11 @@ GH_FAILURE_MAX_RUN_LOGS="${GH_FAILURE_MAX_RUN_LOGS:-6}"                         
 FOSS_SCAN_TIMEOUT="${FOSS_SCAN_TIMEOUT:-30}"                                                               # Timeout for FOSS contribution scan prefetch (t1702)
 FOSS_MAX_DISPATCH_PER_CYCLE="${FOSS_MAX_DISPATCH_PER_CYCLE:-2}"                                            # Max FOSS contribution workers per pulse cycle (t1702)
 
-# Per-issue fast-fail counter (t1888)
-# Tracks consecutive launch deaths per issue. After FAST_FAIL_SKIP_THRESHOLD
-# consecutive failures the issue is skipped for FAST_FAIL_EXPIRY_SECS seconds.
-# Only affects deterministic dispatch — LLM pulse is unaffected.
+# Per-issue fast-fail counter (t1888, GH#2076)
+# Tracks consecutive worker failures (launch AND execution) per issue.
+# After FAST_FAIL_SKIP_THRESHOLD consecutive failures the issue is skipped
+# for FAST_FAIL_EXPIRY_SECS seconds. At ESCALATION_FAILURE_THRESHOLD (default 2)
+# the issue is auto-escalated to tier:thinking (opus) for the next dispatch.
 FAST_FAIL_SKIP_THRESHOLD="${FAST_FAIL_SKIP_THRESHOLD:-3}" # Skip after N consecutive failures
 FAST_FAIL_EXPIRY_SECS="${FAST_FAIL_EXPIRY_SECS:-14400}"   # 4h expiry on skip state
 
@@ -7050,9 +7051,10 @@ recover_failed_launch_state() {
 #######################################
 # Per-issue fast-fail counter (t1888)
 #
-# Tracks consecutive launch deaths per issue. After FAST_FAIL_SKIP_THRESHOLD
-# consecutive failures the issue is skipped by the deterministic fill floor
-# for FAST_FAIL_EXPIRY_SECS seconds. The LLM pulse is unaffected.
+# Tracks consecutive worker failures (launch AND execution) per issue.
+# After FAST_FAIL_SKIP_THRESHOLD consecutive failures the issue is skipped
+# for FAST_FAIL_EXPIRY_SECS seconds. At ESCALATION_FAILURE_THRESHOLD (default 2)
+# failures, the issue is auto-escalated to tier:thinking (opus). (GH#2076)
 #
 # State file: FAST_FAIL_STATE_FILE (JSON, < 1KB per entry)
 # Format: { "slug/number": { "count": N, "ts": epoch, "reason": "..." } }
@@ -7092,6 +7094,33 @@ _ff_load() {
 }
 
 #######################################
+# Acquire an exclusive lock for fast-fail state read-modify-write.
+# Uses mkdir atomicity (same pattern as circuit-breaker-helper.sh).
+# Both pulse-wrapper.sh and worker-watchdog.sh write to the same
+# state file — this prevents lost increments from concurrent updates.
+# (GH#2076, CodeRabbit review)
+#
+# Arguments: command and arguments to run under lock
+# Returns: exit code of the wrapped command
+#######################################
+_ff_with_lock() {
+	local lock_dir="${FAST_FAIL_STATE_FILE}.lockdir"
+	local retries=0
+	while ! mkdir "$lock_dir" 2>/dev/null; do
+		retries=$((retries + 1))
+		if [[ "$retries" -ge 50 ]]; then
+			echo "[pulse-wrapper] _ff_with_lock: lock acquisition timed out" >>"$LOGFILE"
+			return 1
+		fi
+		sleep 0.1
+	done
+	local rc=0
+	"$@" || rc=$?
+	rmdir "$lock_dir" 2>/dev/null || true
+	return "$rc"
+}
+
+#######################################
 # Write updated state atomically (tmp + mv).
 # Arguments: $1 JSON string
 #######################################
@@ -7116,9 +7145,16 @@ _ff_save() {
 
 #######################################
 # Increment the fast-fail counter for an issue.
+# Acquires a file lock to prevent lost updates from concurrent
+# pulse-wrapper and worker-watchdog writes. (GH#2076)
 # Arguments: $1 issue_number, $2 repo_slug, $3 reason
 #######################################
 fast_fail_record() {
+	_ff_with_lock _fast_fail_record_locked "$@" || return 0
+	return 0
+}
+
+_fast_fail_record_locked() {
 	local issue_number="$1"
 	local repo_slug="$2"
 	local reason="${3:-launch_failure}"
@@ -7154,14 +7190,29 @@ fast_fail_record() {
 
 	_ff_save "$updated_state"
 	echo "[pulse-wrapper] fast_fail_record: #${issue_number} (${repo_slug}) count=${new_count} reason=${reason}" >>"$LOGFILE"
+
+	# Trigger tier escalation when failure count reaches threshold (GH#2076)
+	escalate_issue_tier "$issue_number" "$repo_slug" "$new_count" "$reason" || true
+
 	return 0
 }
 
 #######################################
-# Reset the fast-fail counter for an issue (on successful launch).
+# Reset the fast-fail counter for an issue.
+#
+# Called when an issue is confirmed resolved (PR merged, issue closed) —
+# NOT on launch success. Previously this was called on launch, which
+# defeated the counter entirely since every launch reset it before the
+# worker could fail. (GH#2076, GH#17378)
+#
 # Arguments: $1 issue_number, $2 repo_slug
 #######################################
 fast_fail_reset() {
+	_ff_with_lock _fast_fail_reset_locked "$@" || return 0
+	return 0
+}
+
+_fast_fail_reset_locked() {
 	local issue_number="$1"
 	local repo_slug="$2"
 
@@ -7181,7 +7232,7 @@ fast_fail_reset() {
 
 	updated_state=$(printf '%s' "$state" | jq --arg k "$key" 'del(.[$k])' 2>/dev/null) || return 0
 	_ff_save "$updated_state"
-	echo "[pulse-wrapper] fast_fail_reset: #${issue_number} (${repo_slug}) counter cleared on successful launch" >>"$LOGFILE"
+	echo "[pulse-wrapper] fast_fail_reset: #${issue_number} (${repo_slug}) counter cleared" >>"$LOGFILE"
 	return 0
 }
 
@@ -7291,8 +7342,12 @@ check_worker_launch() {
 					return 1
 				fi
 			done
-			# Successful launch — reset fast-fail counter (t1888)
-			fast_fail_reset "$issue_number" "$repo_slug" || true
+			# Launch confirmed — do NOT reset fast-fail counter here.
+			# A successful launch does not mean successful completion.
+			# The counter is reset only when the issue is closed or a PR
+			# is confirmed. Resetting on launch defeated the counter
+			# entirely — workers that launched but died during execution
+			# were invisible. (GH#2076, GH#17378)
 			return 0
 		fi
 		sleep "$poll_seconds"
@@ -7710,6 +7765,8 @@ _Merged by deterministic merge pass (pulse-wrapper.sh). No worker summary was av
 				gh issue comment "$linked_issue" --repo "$repo_slug" \
 					--body "$closing_comment" 2>/dev/null || true
 				gh issue close "$linked_issue" --repo "$repo_slug" 2>/dev/null || true
+				# Reset fast-fail counter now that the issue is resolved (GH#2076)
+				fast_fail_reset "$linked_issue" "$repo_slug" || true
 			fi
 		else
 			failed=$((failed + 1))
