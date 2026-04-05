@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.100] - 2026-04-05
+
+### Fixed
+
+- add exact close-reference verification to has_open_pr() (#17435)
+- consistent persistent label, LLM stall detection, test suite, release preflight (t1890) (#17437)
+- remove time_total from curl write-out to fix http_code extraction (#17439)
+
 ## [3.6.98] - 2026-04-05
 
 ### Changed
