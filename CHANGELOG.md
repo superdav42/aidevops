@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.98] - 2026-04-05
+
+### Changed
+
+- preserve local script edits + fix OpenCode relative paths (#17421)
+- Maintenance: fix version references to 3.6.97 (missed in #17425) (#17426)
+
+### Fixed
+
+- parse probe_provider HTTP code trailer (GH#17427) (#17430)
+- improve detect_default_shell() with reliable system query (#17424)
+- add zero-debt guard to _complexity_llm_sweep_due (GH#17422) (#17423)
+- add PID file guard to scan mode to prevent multiple instances (GH#17415) (#17418)
+- warn when deployed scripts differ from canonical source (GH#17414) (#17417)
+- add PID file guard to daemon mode to prevent multiple instances (GH#17408) (#17416)
+
 ## [3.6.97] - 2026-04-05
 
 ### Fixed
