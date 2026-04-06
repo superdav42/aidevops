@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.123] - 2026-04-06
+
+### Changed
+
+- add canary smoke test and two-phase activity watchdog (#17624)
+- reduce nesting depth in cch-traffic-monitor.sh (#17619)
+- tighten completion detection in JSON parsing block (#17621)
+
+### Fixed
+
+- update safety-policy-check to find deny rules in extracted Python file (#17622)
+
 ## [3.6.122] - 2026-04-06
 
 ### Changed
