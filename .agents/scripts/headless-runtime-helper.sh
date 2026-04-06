@@ -1246,12 +1246,14 @@ _build_run_cmd() {
 # Returns: 0 always (exit code written to exit_code_file).
 #
 # Includes an activity watchdog: if no LLM activity appears in the output
-# file within HEADLESS_ACTIVITY_TIMEOUT_SECONDS (default 90s), the opencode
+# file within HEADLESS_ACTIVITY_TIMEOUT_SECONDS (default 300s), the opencode
 # process is killed. This catches rate-limited providers that cause the
 # worker to hang indefinitely waiting for an API response. Without this,
 # stalled workers consume slots permanently and rotation never fires
 # (because the retry logic only runs after the process exits).
-HEADLESS_ACTIVITY_TIMEOUT_SECONDS="${HEADLESS_ACTIVITY_TIMEOUT_SECONDS:-90}"
+# GH#17442: increased from 90s to 300s — with 335 agents in the system
+# prompt, OpenCode needs 60-120s to initialize before first model output.
+HEADLESS_ACTIVITY_TIMEOUT_SECONDS="${HEADLESS_ACTIVITY_TIMEOUT_SECONDS:-300}"
 
 _invoke_opencode() {
 	local output_file="$1"
