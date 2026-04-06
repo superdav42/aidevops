@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.118] - 2026-04-06
+
+### Fixed
+
+- prevent set -e from aborting release on git ls-remote exit code 2 (#17554)
+
 ## [3.6.100] - 2026-04-05
 
 ### Fixed
