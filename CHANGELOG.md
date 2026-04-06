@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.125] - 2026-04-06
+
+### Fixed
+
+- version guard reinstalls pinned opencode if drifted — unknown process keeps upgrading to 1.3.17
+- move canary before dispatch claim — failure no longer triggers backoff or blocks re-dispatch
+
 ## [3.6.124] - 2026-04-06
 
 ### Changed
