@@ -1748,15 +1748,15 @@
       "pr": 15933
     },
     ".agents/scripts/gh-signature-helper.sh": {
-      "hash": "ad0173ecd5da454e2e901ebd7f1120c0e86a32fd",
-      "at": "2026-03-29T16:34:26Z",
-      "passes": 2,
+      "hash": "af29c64d604abe4a0afaf132648261377e2c7bbe",
+      "at": "2026-04-06T00:41:47Z",
+      "passes": 3,
       "pr": 13021
     },
     ".agents/scripts/headless-runtime-helper.sh": {
-      "hash": "fe506f040ce998e0add4fd2fa99067e6349f4ccd",
-      "at": "2026-04-05T20:58:45Z",
-      "passes": 7,
+      "hash": "e36d3fd184d38ed2d3cd594df373c99cffa23cbc",
+      "at": "2026-04-06T00:41:47Z",
+      "passes": 8,
       "pr": 15086
     },
     ".agents/scripts/issue-sync-lib.sh": {
@@ -1790,9 +1790,9 @@
       "pr": 15455
     },
     ".agents/scripts/pulse-wrapper.sh": {
-      "hash": "828752a80725620d0ea3299f8b65c139ab01081d",
-      "at": "2026-04-05T23:42:35Z",
-      "passes": 24,
+      "hash": "1532e9e5dadf11a039682dd4d2191253b3001c0f",
+      "at": "2026-04-06T01:07:46Z",
+      "passes": 26,
       "pr": 15086
     },
     ".agents/scripts/schema-validator-helper.sh": {
@@ -1832,9 +1832,9 @@
       "pr": 11273
     },
     ".agents/scripts/tests/test-gh-signature-helper.sh": {
-      "hash": "d4549bd8e332c747758710a80c4aa344a5cd5442",
-      "at": "2026-03-29T13:19:54Z",
-      "passes": 2,
+      "hash": "3af740959889a4e93743f903c6d5339d898cf6eb",
+      "at": "2026-04-06T00:41:47Z",
+      "passes": 3,
       "pr": 12971
     },
     ".agents/scripts/tests/test-quality-feedback-main-verification.sh": {
@@ -5267,15 +5267,15 @@
       "pr": 15490
     },
     "aidevops.sh": {
-      "hash": "b2d1c857f4fc6bad43b79b04955b4699b65bc1cf",
-      "at": "2026-04-05T23:43:05Z",
-      "passes": 40,
+      "hash": "005068649a46d0c1e8e30dcd86f0c6fea964cb06",
+      "at": "2026-04-06T00:42:11Z",
+      "passes": 41,
       "pr": 15470
     },
     "setup.sh": {
-      "hash": "8aac5f559061b3d2623d275e341a500caadde63b",
-      "at": "2026-04-05T23:43:05Z",
-      "passes": 39,
+      "hash": "b17745a7efa166ab181d38ed927fc93b1d4725c0",
+      "at": "2026-04-06T00:42:12Z",
+      "passes": 40,
       "pr": 15470
     },
     "todo/tasks/GH#15363-brief.md": {
@@ -6740,6 +6740,12 @@
       "hash": "f0eacffbaf909a5f1849f7bf5668c92a81ba252d",
       "at": "2026-04-05T19:44:17Z",
       "pr": 17436,
+      "passes": 1
+    },
+    ".agents/workflows/triage-review.md": {
+      "hash": "5ee4d345df63eca3f5375d6772efc190b7474ae8",
+      "at": "2026-04-06T01:08:16Z",
+      "pr": 17494,
       "passes": 1
     }
   },
