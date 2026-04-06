@@ -324,30 +324,14 @@ do_check() {
 		echo "Status check fallback: bots rate-limited but have SUCCESS status checks" >&2
 		return 0
 	elif [[ -n "$rate_limited_bots" ]]; then
-		# GH#3827: Rate-limit grace period. If bots posted rate-limit notices
-		# (proving they're configured and aware of the PR) but the PR has been
-		# open longer than RATE_LIMIT_GRACE_SECONDS, pass with a warning.
-		# This prevents indefinite blockage when bots are systemically rate-limited.
-		local pr_age
-		pr_age=$(get_pr_age_seconds "$pr_number" "$repo")
-		if [[ "$RATE_LIMIT_GRACE_SECONDS" -gt 0 ]] && [[ "$pr_age" -ge "$RATE_LIMIT_GRACE_SECONDS" ]]; then
-			local grace_hours=$((RATE_LIMIT_GRACE_SECONDS / 3600))
-			local age_hours=$((pr_age / 3600))
-			echo "PASS_RATE_LIMITED"
-			echo "Rate-limit grace period exceeded (PR is ${age_hours}h old, threshold: ${grace_hours}h)." >&2
-			echo "Bots are rate-limited: ${rate_limited_bots}" >&2
-			echo "Passing gate — bot reviews will be addressed post-merge if needed." >&2
-			return 0
-		fi
-		echo "WAITING"
-		echo "Bots posted rate-limit notices only (not real reviews): ${rate_limited_bots}" >&2
-		echo "No SUCCESS status checks found as fallback." >&2
-		if [[ "$RATE_LIMIT_GRACE_SECONDS" -gt 0 ]]; then
-			local grace_hours=$((RATE_LIMIT_GRACE_SECONDS / 3600))
-			local remaining=$(((RATE_LIMIT_GRACE_SECONDS - pr_age) / 60))
-			echo "Rate-limit grace period: ${grace_hours}h (${remaining}min remaining)." >&2
-		fi
-		return 1
+		# GH#17549: Bot posted a rate-limit notice — it's configured, it tried,
+		# but capacity is out of our control. Pass immediately. The bot will
+		# review post-merge when its rate limit resets. Waiting gains nothing
+		# when we can't influence the bot's rate limit.
+		echo "PASS_RATE_LIMITED"
+		echo "Bots are rate-limited (tried but capacity-constrained): ${rate_limited_bots}" >&2
+		echo "Passing gate — bot reviews will be addressed post-merge if needed." >&2
+		return 0
 	else
 		echo "WAITING"
 		echo "No review bots found yet. Known bots: ${KNOWN_BOTS[*]}" >&2

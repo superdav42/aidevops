@@ -1790,9 +1790,9 @@
       "pr": 15455
     },
     ".agents/scripts/pulse-wrapper.sh": {
-      "hash": "5e9dd3801b0bd803df7837bb9cdf5012747166d9",
-      "at": "2026-04-06T22:17:23Z",
-      "passes": 34,
+      "hash": "674a8c6976065fc8852251fd196496a759ed33a8",
+      "at": "2026-04-06T23:42:48Z",
+      "passes": 35,
       "pr": 15086
     },
     ".agents/scripts/schema-validator-helper.sh": {
@@ -5267,15 +5267,15 @@
       "pr": 15490
     },
     "aidevops.sh": {
-      "hash": "03a131de2af9e7f5a5a603cdf4a676027419d6f6",
-      "at": "2026-04-06T22:38:46Z",
-      "passes": 53,
+      "hash": "c2f550d5d669e1ca8e730e345a85f3b3a60cf91a",
+      "at": "2026-04-06T23:43:12Z",
+      "passes": 54,
       "pr": 15470
     },
     "setup.sh": {
-      "hash": "95233fba1afe351bdea9b48c45ff47ddb867dddd",
-      "at": "2026-04-06T22:38:46Z",
-      "passes": 52,
+      "hash": "319e629c935f93277f5763b69e03b82c58a60327",
+      "at": "2026-04-06T23:43:12Z",
+      "passes": 53,
       "pr": 15470
     },
     "todo/tasks/GH#15363-brief.md": {
@@ -6432,7 +6432,7 @@
       "hash": "476c989fca56149f90f1eefc2b02cafdc5a6e0d5",
       "simplified_at": "2026-04-04T09:17:13Z",
       "issue": "GH#17250",
-      "action": "consolidated 6 group tables + CSS block into single unified table with CSS variable column (94\u219228 lines)",
+      "action": "consolidated 6 group tables + CSS block into single unified table with CSS variable column (94→28 lines)",
       "at": "2026-04-04T14:53:40Z",
       "passes": 1
     },
@@ -6695,10 +6695,10 @@
       "passes": 2
     },
     ".agents/scripts/worker-lifecycle-common.sh": {
-      "hash": "7b58f35e2312dcc2e9f623aeb9b8d8068436e708",
-      "at": "2026-04-06T03:24:31Z",
+      "hash": "7b98c0a6fd5d851dc306387686dda429b55704fd",
+      "at": "2026-04-06T23:42:48Z",
       "pr": 17353,
-      "passes": 3
+      "passes": 4
     },
     ".agents/tools/code-review/setup.md": {
       "hash": "fb0d5288be7a808f9dc232d229f4dca354745323",
