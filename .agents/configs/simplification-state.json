@@ -1486,9 +1486,9 @@
       "pr": 15480
     },
     ".agents/scripts/commands/full-loop.md": {
-      "hash": "90ce787cd95dafd23417964884b60e8599f90225",
-      "at": "2026-04-06T03:58:32Z",
-      "passes": 8,
+      "hash": "bbbd667405c2419666df9542acf260ae8b927fa5",
+      "at": "2026-04-06T14:24:40Z",
+      "passes": 9,
       "pr": 14590
     },
     ".agents/scripts/commands/ip-check.md": {
@@ -5267,15 +5267,15 @@
       "pr": 15490
     },
     "aidevops.sh": {
-      "hash": "c8f6170cb8fb8a9591423194af5e74beead4dae4",
-      "at": "2026-04-06T00:42:11Z",
-      "passes": 41,
+      "hash": "09fcd8d4b43d41a1a7fb493c96c55a06ae28f20c",
+      "at": "2026-04-06T14:25:04Z",
+      "passes": 42,
       "pr": 15470
     },
     "setup.sh": {
-      "hash": "093cd1ab8b1ff66574ad9f402bd0fa8f528f6cf4",
-      "at": "2026-04-06T00:42:12Z",
-      "passes": 40,
+      "hash": "25a4211d9e907a3a72a3028eec09a874848b0186",
+      "at": "2026-04-06T14:25:04Z",
+      "passes": 41,
       "pr": 15470
     },
     "todo/tasks/GH#15363-brief.md": {
@@ -6746,6 +6746,24 @@
       "hash": "2b2ddf2038cf0989cdeb71a7151cefea55856f81",
       "at": "2026-04-06T01:08:16Z",
       "pr": 17494,
+      "passes": 1
+    },
+    ".agents/scripts/validate-version-consistency.sh": {
+      "hash": "0c91e91529418e35bee2c22d9f0ea1286d60022f",
+      "at": "2026-04-06T14:25:05Z",
+      "pr": 17537,
+      "passes": 1
+    },
+    ".agents/scripts/claim-task-id.sh": {
+      "hash": "9189a9e6d649811a9a4544b00d940e444e901c52",
+      "at": "2026-04-06T14:25:05Z",
+      "pr": 17531,
+      "passes": 1
+    },
+    ".agents/scripts/quality-feedback-helper.sh": {
+      "hash": "d963b7aa958a5e606118460552802beedf4846b5",
+      "at": "2026-04-06T14:25:05Z",
+      "pr": 17530,
       "passes": 1
     }
   },
