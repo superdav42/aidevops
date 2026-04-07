@@ -182,6 +182,8 @@ Tasks with no open blockers - ready to work on. Use `/ready` to refresh this lis
 
 ## Backlog
 
+- [ ] t1906 fix: claim-task-id.sh auto-read brief What section when no --description provided — eliminates stub "no description provided" issue body by falling back to todo/tasks/{id}-brief.md before the placeholder #enhancement #scripts #auto-dispatch ~30m ref:GH#17688 logged:2026-04-07
+
 - [ ] t1905 chore: add conversation-end loop scan rule to build.txt — scan for open threads (unfulfilled commitments, unnotified external parties, displaced requests) before declaring complete #enhancement #prompt #auto-dispatch ~6m ref:GH#17686 logged:2026-04-07
 
 - [ ] t1903 fix: suppress per-file log_success output in generate-skills.sh during normal mode — gate "Generated: $skill_file" calls behind DRY_RUN==true in all three generation loops and clean mode; summary line already exists #bugfix #skills #ux #auto-dispatch ~20m ref:GH#17682 logged:2026-04-07
