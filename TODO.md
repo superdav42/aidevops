@@ -182,6 +182,8 @@ Tasks with no open blockers - ready to work on. Use `/ready` to refresh this lis
 
 ## Backlog
 
+- [ ] t1905 chore: add conversation-end loop scan rule to build.txt — scan for open threads (unfulfilled commitments, unnotified external parties, displaced requests) before declaring complete #enhancement #prompt #auto-dispatch ~6m ref:GH#17686 logged:2026-04-07
+
 - [ ] t1903 fix: suppress per-file log_success output in generate-skills.sh during normal mode — gate "Generated: $skill_file" calls behind DRY_RUN==true in all three generation loops and clean mode; summary line already exists #bugfix #skills #ux #auto-dispatch ~20m ref:GH#17682 logged:2026-04-07
 
 - [ ] t1902 feat: compressed context notation for chat app memory — token-budgeted tiered context injection for conversation-helper.sh and entity-helper.sh, reducing per-message context from ~400-800 to ~180-260 tokens #enhancement #memory #chat-integrations #auto-dispatch ~6h ref:GH#17672 logged:2026-04-07
