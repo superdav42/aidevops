@@ -121,6 +121,37 @@ Heading MUST contain `## Review:` or `## Issue/PR Review:` — pulse idempotency
 - **Implementation guidance**: [key steps, test cases to add]
 ```
 
+## Closing the Loop with the Reporter
+
+After a verdict is reached, the reporter must always be informed — regardless of outcome. This step is mandatory, not optional.
+
+| Outcome | Action |
+|---------|--------|
+| APPROVE → internal task created | Comment on source issue: thank reporter, link to internal task/PR, set expectation on timeline |
+| APPROVE → PR merged same session | Comment on source issue: thank reporter, link to merged PR, close issue |
+| REQUEST CHANGES | Comment explaining what needs to change before the fix can proceed |
+| DECLINE | Comment explaining why (out of scope, by design, duplicate) and close issue |
+
+**Template — issue converted to internal task:**
+
+```markdown
+Thanks for the report, @{reporter}.
+
+Accepted. Tracked internally as #{internal_issue} and implemented in PR #{pr_number} (now merged). This will be included in the next `aidevops update`.
+
+Closing this as resolved.
+```
+
+**Template — issue approved but pending implementation:**
+
+```markdown
+Thanks for the report, @{reporter}.
+
+Accepted and queued for implementation as #{internal_issue}. We'll link back here when the fix ships.
+```
+
+**When to skip:** Pulse-automated triage only (headless mode without a human session). The pulse posts its own review comment; the maintainer closes the loop after approving.
+
 ## Headless / Pulse-Driven Mode
 
 > **Note (t1894):** Pulse-dispatched triage reviews now use the sandboxed `triage-review.md` agent which has NO Bash/network access. This file (`review-issue-pr.md`) is only used for interactive `/review-issue-pr` sessions where the user is present. The sandboxed agent receives all GitHub data pre-fetched by deterministic code.
