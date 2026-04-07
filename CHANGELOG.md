@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.151] - 2026-04-07
+
+### Changed
+
+- fix _ts_to_epoch() timezone bug causing premature stale recovery (#17710)
+- extend complexity scanner to Qlty-scored file types (.py/.mjs/.js/.ts) (#17708)
+- remove approval gate from pulse triage dispatch (#17709)
+- add briefs and plan for triage gate fix and Linux scheduler completion
+- Maintenance: update simplification state registry
+- Maintenance: add t1909 brief and TODO entry for install-systemd subcommand (ref:GH#17692)
+- CI: add HOL skill-publish validate workflow (#17671)
+- Maintenance: update simplification state registry
+
+### Fixed
+
+- avoid stat output pollution and suppress wal pragma output (#17685)
+
 ## [3.6.139] - 2026-04-07
 
 ### Added
