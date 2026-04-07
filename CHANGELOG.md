@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.158] - 2026-04-08
+
+### Changed
+
+- Documentation: add objective tier assignment validation to prevent mis-tagging (t1921) (#17765)
+- Refactor: consolidate model tier mappings to single source of truth (#17763)
+- Maintenance: update simplification state registry
+- Maintenance: tighten pageindex.md agent doc (153→107 lines) (#17760)
+- Maintenance: update simplification state registry
+
 ## [3.6.157] - 2026-04-07
 
 ### Changed
