@@ -5,7 +5,7 @@
 # AI DevOps Framework CLI
 # Usage: aidevops <command> [options]
 #
-# Version: 3.6.148
+# Version: 3.6.149
 
 set -euo pipefail
 
