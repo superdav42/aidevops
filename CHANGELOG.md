@@ -10,6 +10,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.155] - 2026-04-07
+
+### Added
+
+- reasoning-tier enrichment for failed worker issues (#17748)
+
+### Changed
+
+- add triage dedup guard to prevent repeated lock/unlock cycles (#17751)
+- check open PRs in dedup Layer 4 — prevent duplicate dispatch (#17749)
+- Maintenance: update simplification state registry
+- Refactor: decompose compute_file_metrics() into language-specific helpers (GH#17713) (#17747)
+- Refactor: extract verbose output condition helper (#17745)
+- Maintenance: update simplification state registry
+- add qlty verification to simplification brief template and code-simplifier (#17741)
+- Maintenance: update simplification state registry
+- fix: Linux scheduler dual-execution and systemd migration completion (#17730)
+- include PID 1 in OpenCode runtime detection (#17736)
+- Performance: replace while-read loop with awk in _read_brief_what_section (#17737)
+- Maintenance: update simplification state registry
+
+### Fixed
+
+- dedup checks commit messages, not PR bodies — closes go in commits (#17750)
+- remove blocking sleep and fix gh pr view exit code in merge pass (#17744)
+- add systemd install mode to routine helper (#17739)
+- replace $(uname) with $OSTYPE in file_size_bytes for efficiency (#17732)
+- tighten conversation-end loop scan wording (#17738)
+
 ## [3.6.152] - 2026-04-07
 
 ### Changed
