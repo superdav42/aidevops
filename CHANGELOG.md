@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.210] - 2026-04-09
+
+### Added
+
+- generate OS-specific routine descriptions with cross-platform footnote (#17970)
+
 ## [3.6.209] - 2026-04-09
 
 ### Added
