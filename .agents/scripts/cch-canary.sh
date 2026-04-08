@@ -385,8 +385,7 @@ print('false')
 			# Log the issue via framework helper if available
 			[[ ! -x "${SCRIPTS_DIR}/framework-routing-helper.sh" ]] ||
 				"${SCRIPTS_DIR}/framework-routing-helper.sh" log-framework-issue \
-					"Client request format drift detected — review signing constants" \
-					2>/dev/null || true
+					"Client request format drift detected — review signing constants" || true
 		fi
 	fi
 
