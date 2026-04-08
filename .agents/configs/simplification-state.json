@@ -1486,9 +1486,9 @@
       "pr": 15480
     },
     ".agents/scripts/commands/full-loop.md": {
-      "hash": "aef7afa4e7c84250a4b3c83bf4a129944b2e097c",
-      "at": "2026-04-08T00:16:31Z",
-      "passes": 10,
+      "hash": "c842594b7545d86c431927db9c69c4f543d63625",
+      "at": "2026-04-08T03:56:36Z",
+      "passes": 11,
       "pr": 14590
     },
     ".agents/scripts/commands/ip-check.md": {
@@ -1826,9 +1826,9 @@
       "pr": 15916
     },
     ".agents/scripts/stats-functions.sh": {
-      "hash": "0867a0cf242304187993e5ae67c283216162c872",
-      "at": "2026-04-05T17:14:50Z",
-      "passes": 6,
+      "hash": "c7d2e9eb0f3957e614161a3ab87a84580b19e973",
+      "at": "2026-04-08T03:56:38Z",
+      "passes": 7,
       "pr": 11273
     },
     ".agents/scripts/tests/test-gh-signature-helper.sh": {
@@ -5261,21 +5261,21 @@
       "pr": 16415
     },
     "TODO.md": {
-      "hash": "b011f7fe34d90e915feb7d2c26aedc6a3c23b4aa",
-      "at": "2026-04-08T01:09:42Z",
-      "passes": 22,
+      "hash": "46a13d2d510430fcc4dff8dedd38bc76c658480b",
+      "at": "2026-04-08T03:57:06Z",
+      "passes": 23,
       "pr": 15490
     },
     "aidevops.sh": {
-      "hash": "7e1b7f1543d561f06df1f24b6e552855f6209b9e",
-      "at": "2026-04-08T03:01:56Z",
-      "passes": 77,
+      "hash": "0e759631a9091948f0f31f491c7bc324001664da",
+      "at": "2026-04-08T03:57:06Z",
+      "passes": 78,
       "pr": 15470
     },
     "setup.sh": {
-      "hash": "da60227e9faae82aec19c9cba34be8ad124d8c1e",
-      "at": "2026-04-08T03:01:56Z",
-      "passes": 77,
+      "hash": "e492605169610e8af561c3b776f94ff65840bcf0",
+      "at": "2026-04-08T03:57:06Z",
+      "passes": 78,
       "pr": 15470
     },
     "todo/tasks/GH#15363-brief.md": {
