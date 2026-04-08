@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.207] - 2026-04-09
+
+### Added
+
+- add unknown bot detection workflow with auto-issue creation (#17966)
+
 ## [3.6.206] - 2026-04-09
 
 ### Fixed
