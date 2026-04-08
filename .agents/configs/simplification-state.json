@@ -1826,9 +1826,9 @@
       "pr": 15916
     },
     ".agents/scripts/stats-functions.sh": {
-      "hash": "c7d2e9eb0f3957e614161a3ab87a84580b19e973",
-      "at": "2026-04-08T03:56:38Z",
-      "passes": 7,
+      "hash": "d8bebd4259fd86444c1ee0af311a0040be037289",
+      "at": "2026-04-08T04:15:59Z",
+      "passes": 8,
       "pr": 11273
     },
     ".agents/scripts/tests/test-gh-signature-helper.sh": {
@@ -5267,15 +5267,15 @@
       "pr": 15490
     },
     "aidevops.sh": {
-      "hash": "0e759631a9091948f0f31f491c7bc324001664da",
-      "at": "2026-04-08T03:57:06Z",
-      "passes": 78,
+      "hash": "cc9eb123d564bdead9cf7b688dfa01ca0f2f537b",
+      "at": "2026-04-08T04:16:31Z",
+      "passes": 79,
       "pr": 15470
     },
     "setup.sh": {
-      "hash": "e492605169610e8af561c3b776f94ff65840bcf0",
-      "at": "2026-04-08T03:57:06Z",
-      "passes": 78,
+      "hash": "3dadd6e2d7ce25b8bf1cfa95606ff1748e75a521",
+      "at": "2026-04-08T04:16:31Z",
+      "passes": 79,
       "pr": 15470
     },
     "todo/tasks/GH#15363-brief.md": {
