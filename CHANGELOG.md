@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.202] - 2026-04-08
+
+### Changed
+
+- Maintenance: add bot noise and operational comment skip rules (#8c, #8d) (#17957)
+
 ## [3.6.199] - 2026-04-08
 
 ### Fixed
