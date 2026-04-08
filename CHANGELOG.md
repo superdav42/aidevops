@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.192] - 2026-04-08
+
+### Fixed
+
+- improve readability of exit code check in test-runtime-registry.sh (#17939)
+- simplify --days condition in seo-export-helper.sh for readability (#17938)
+- use if blocks for format conversion clarity (#17937)
+
 ## [3.6.189] - 2026-04-08
 
 ### Changed
