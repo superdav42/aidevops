@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.187] - 2026-04-08
+
+### Changed
+
+- skip approval gate for maintainer-authored quality-debt issues (#17922)
+
+### Fixed
+
+- memory-pressure-monitor.sh review feedback from PR #17858 (#17926)
+
 ## [3.6.185] - 2026-04-08
 
 ### Fixed
