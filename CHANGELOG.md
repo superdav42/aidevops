@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.211] - 2026-04-09
+
+### Fixed
+
+- centralise known bots list so workflow stays current via aidevops update (#17971)
+
 ## [3.6.210] - 2026-04-09
 
 ### Added
