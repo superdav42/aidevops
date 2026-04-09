@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.221] - 2026-04-09
+
+### Changed
+
+- restore nesting threshold headroom (#18014)
+
+### Fixed
+
+- prevent large-file gate from blocking issues targeting non-code files (GH#17897) (#18015)
+
 ## [3.6.220] - 2026-04-09
 
 ### Changed
