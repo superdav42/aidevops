@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.220] - 2026-04-09
+
+### Changed
+
+- remove BSD grep noise from headless runtime diagnostics (#18012)
+
 ## [3.6.218] - 2026-04-09
 
 ### Fixed
