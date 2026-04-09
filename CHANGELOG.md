@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.217] - 2026-04-09
+
+### Fixed
+
+- exclude audit-trail/history files from simplification scanner (#17987)
+
 ## [3.6.214] - 2026-04-09
 
 ### Added
