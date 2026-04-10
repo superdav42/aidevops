@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.229] - 2026-04-10
+
+### Fixed
+
+- merge custom routing table with default for complete tier coverage (#18055)
+
 ## [3.6.228] - 2026-04-10
 
 ### Fixed
