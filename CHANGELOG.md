@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.228] - 2026-04-10
+
+### Fixed
+
+- optimize model resolution for performance and Bash 3.2 compat (#18053)
+
 ## [3.6.227] - 2026-04-10
 
 ### Fixed
