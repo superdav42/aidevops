@@ -82,8 +82,9 @@
  * Unsafe to strip (preserve) when:
  *   - `finish === "tool-calls"` — the LLM requested tools, next call needs
  *     to provide tool results.
- *   - Any tool part is in `pending` / `running` / `completed` state — the
- *     LLM response flow is mid-turn and dropping the call would desync.
+ *   - Any tool part has a status that is NOT explicitly terminal (`error` or
+ *     `aborted`) — unknown or missing statuses are treated as live to avoid
+ *     stripping mid-turn state.
  *
  * @param {{ info?: { role?: string, finish?: string }, parts?: Array<object> }} msg
  * @returns {boolean}
@@ -98,13 +99,10 @@ function isAssistantSafeToStrip(msg) {
     for (const part of msg.parts) {
       if (!part || part.type !== "tool") continue;
       const status = part.state?.status;
-      // `error` and `aborted` tool parts are terminal and OK to strip;
-      // `pending`, `running`, `completed` indicate live state.
-      if (
-        status === "pending" ||
-        status === "running" ||
-        status === "completed"
-      ) {
+      // Only `error` and `aborted` are explicitly terminal — safe to strip.
+      // Any other status (including `pending`, `running`, `completed`, or
+      // missing/unknown) is treated as live state; return false immediately.
+      if (status !== "error" && status !== "aborted") {
         return false;
       }
     }
@@ -178,18 +176,6 @@ export function createPrefillGuardHook(deps = {}) {
           `last message is assistant but NOT safe to strip (${describeStripped(last)}); leaving untouched`,
         );
         return;
-      }
-
-      // Edge case: if after stripping the array is empty or has only
-      // non-user messages, put the first one back to keep opencode's own
-      // validation happy. This shouldn't happen in practice.
-      if (msgs.length === 0) {
-        const restored = stripped.pop();
-        msgs.push(restored);
-        log(
-          "WARN",
-          "stripping would have emptied message list; restored the last assistant",
-        );
       }
 
       const details = stripped.map(describeStripped).join(" | ");
