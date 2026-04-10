@@ -30,9 +30,9 @@ Part of Qlty maintainability recovery (C to A). Three function-level smell findi
 - [x] **Estimate 1h or less?**
 - [x] **4 or fewer acceptance criteria?**
 
-**Selected tier:** `tier:simple`
+**Selected tier:** `tier:standard`
 
-**Tier rationale:** 2 files, straightforward return-path consolidation. No design decisions — just restructure conditionals.
+**Tier rationale:** "Complete code blocks" box unchecked — the brief describes the approach (early-exit pattern) but doesn't provide exact oldString/newString. Worker needs to read the functions and design the consolidation.
 
 ## How (Approach)
 
