@@ -1948,6 +1948,11 @@ GITATTRSEOF
 	# Note: .agents/ itself is NOT ignored — it contains committed project-specific agents.
 	# Only runtime artifacts (loop state, tmp, memory) are ignored.
 	local gitignore="$project_root/.gitignore"
+	# Create .gitignore if it doesn't exist (fresh repos need it too)
+	if [[ ! -f "$gitignore" ]]; then
+		touch "$gitignore"
+		ensure_trailing_newline "$gitignore"
+	fi
 	if [[ -f "$gitignore" ]]; then
 		local gitignore_updated=false
 
@@ -2013,17 +2018,20 @@ GITATTRSEOF
 		# Only AGENTS.md and .agents/ are tracked; everything else is local
 		# scaffolding that should not pollute the project repo.
 		# See goodsalt2 pattern: "AGENTS.md is tracked, everything else is local"
-		local _scaffolding_ignores=(
+		# DB scaffolding (schemas/, migrations/, seeds/) is always included:
+		# legacy repos may have these tracked regardless of enable_database.
+		local _si
+		local _scaffolding_ignores
+		_scaffolding_ignores=(
 			"TODO.md"
 			"todo/"
 			".gitattributes"
+			"schemas/"
+			"migrations/"
+			"seeds/"
 		)
-		# Add database scaffolding if enabled
-		if [[ "$enable_database" == "true" ]]; then
-			_scaffolding_ignores+=("schemas/" "migrations/" "seeds/")
-		fi
 		for _si in "${_scaffolding_ignores[@]}"; do
-			if ! grep -q "^/\?${_si}$" "$gitignore" 2>/dev/null; then
+			if ! grep -Fxq "$_si" "$gitignore" 2>/dev/null && ! grep -Fxq "/$_si" "$gitignore" 2>/dev/null; then
 				# Untrack if already committed by older framework version
 				if git -C "$project_root" ls-files --error-unmatch "$_si" &>/dev/null 2>&1; then
 					git -C "$project_root" rm -r --cached "$_si" &>/dev/null || true
