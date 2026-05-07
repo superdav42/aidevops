@@ -1586,7 +1586,34 @@ _run_canary_test() {
 	# t2887: use _effective_opencode_bin (resolved above), not
 	# $OPENCODE_BIN_DEFAULT directly. Identical to the default in the
 	# happy path; differs only when alternative-path fallback fired.
+	#
+	# Strip OPENCODE_* env vars inherited from a parent OpenCode TUI session.
+	# When pulse-wrapper.sh runs from a shell launched by the OpenCode TUI
+	# (interactive sessions, debugging, manual `aidevops pulse start`), the
+	# parent process exports OPENCODE_SESSION_ID, OPENCODE_PID, OPENCODE_RUN_ID,
+	# OPENCODE_PROCESS_ROLE, OPENCODE, and OPENCODE_SERVER_PASSWORD into the
+	# child environment. The fresh `opencode run` process picks these up,
+	# treats OPENCODE_SESSION_ID as a request to continue an existing session,
+	# fails to find that session in its isolated XDG_DATA_HOME database, and
+	# aborts with the cryptic "Error: Session not found" *before* any model
+	# call happens. This blocks every worker dispatch on the host until the
+	# parent TUI exits.
+	#
+	# Reproduce: launch a shell from the OpenCode TUI, run the canary command
+	# from headless-runtime-lib.sh:1591 verbatim — fails with "Session not
+	# found". Run it with `env -u OPENCODE_SESSION_ID ...` — succeeds. The fix
+	# unsets all OPENCODE_* leaked vars so the canary always starts fresh.
+	#
+	# OPENCODE_BIN is preserved (it's set by the pulse-wrapper.sh cron entry
+	# and not session-bound). Everything else is session/runtime state that
+	# must not propagate.
 	XDG_CONFIG_HOME="$_canary_config_dir" XDG_DATA_HOME="$_canary_data_dir" \
+		env -u OPENCODE_SESSION_ID \
+		    -u OPENCODE_PID \
+		    -u OPENCODE_RUN_ID \
+		    -u OPENCODE_PROCESS_ROLE \
+		    -u OPENCODE \
+		    -u OPENCODE_SERVER_PASSWORD \
 		"${_canary_timeout_cmd[@]}" \
 		"$_effective_opencode_bin" run --pure "Reply with exactly: CANARY_OK" \
 		-m "$canary_model" --dir "${HOME}" --agent build \

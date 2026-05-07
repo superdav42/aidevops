@@ -485,6 +485,31 @@ _invoke_opencode() {
 		fi
 	fi
 
+	# Strip OPENCODE_* env vars inherited from a parent OpenCode TUI session
+	# before spawning the worker. When pulse-wrapper.sh runs from a shell
+	# launched by the TUI (interactive sessions, debugging, manual `aidevops
+	# pulse start`), the parent process exports OPENCODE_SESSION_ID,
+	# OPENCODE_PID, OPENCODE_RUN_ID, OPENCODE_PROCESS_ROLE, OPENCODE, and
+	# OPENCODE_SERVER_PASSWORD. The fresh `opencode run` subprocess sees these,
+	# treats OPENCODE_SESSION_ID as a request to continue an existing session
+	# from the parent's database, fails to find it under the worker's isolated
+	# XDG_DATA_HOME, and aborts with "Error: Session not found" *before* any
+	# model call — blocking every worker dispatch on the host until the parent
+	# TUI exits. The canary at headless-runtime-lib.sh:1591 has the same fix.
+	#
+	# OPENCODE_BIN, OPENCODE_AUTH_FILE, OPENCODE_DB are preserved (set by the
+	# pulse-wrapper.sh cron entry / our auth-isolation logic above; not
+	# session-bound). Only the runtime-state vars are stripped.
+	local -a _oc_env_strip=(
+		env
+		-u OPENCODE_SESSION_ID
+		-u OPENCODE_PID
+		-u OPENCODE_RUN_ID
+		-u OPENCODE_PROCESS_ROLE
+		-u OPENCODE
+		-u OPENCODE_SERVER_PASSWORD
+	)
+
 	# Run in subshell to avoid fragile set +e/set -e toggling (GH#4225).
 	# Subshell localises errexit so main shell state is never modified.
 	# Exit code is written to a temp file — NOT captured via $() — because
@@ -519,16 +544,16 @@ _invoke_opencode() {
 			# a temp file and replays it after exit — the watchdog sees nothing
 			# and kills every sandboxed worker at ~93s.
 			if [[ -n "$passthrough_csv" ]]; then
-				"$SANDBOX_EXEC_HELPER" run --timeout "$HEADLESS_SANDBOX_TIMEOUT_DEFAULT" --allow-secret-io --stream-stdout --passthrough "$passthrough_csv" -- "${_oc_cmd[@]}" 2>&1 | tee "$output_file"
+				"$SANDBOX_EXEC_HELPER" run --timeout "$HEADLESS_SANDBOX_TIMEOUT_DEFAULT" --allow-secret-io --stream-stdout --passthrough "$passthrough_csv" -- "${_oc_env_strip[@]}" "${_oc_cmd[@]}" 2>&1 | tee "$output_file"
 			else
-				"$SANDBOX_EXEC_HELPER" run --timeout "$HEADLESS_SANDBOX_TIMEOUT_DEFAULT" --allow-secret-io --stream-stdout -- "${_oc_cmd[@]}" 2>&1 | tee "$output_file"
+				"$SANDBOX_EXEC_HELPER" run --timeout "$HEADLESS_SANDBOX_TIMEOUT_DEFAULT" --allow-secret-io --stream-stdout -- "${_oc_env_strip[@]}" "${_oc_cmd[@]}" 2>&1 | tee "$output_file"
 			fi
 			printf '%s' "${PIPESTATUS[0]}" >"$exit_code_file"
 		else
 			if [[ "${AIDEVOPS_HEADLESS_SANDBOX_DISABLED:-}" == "1" ]]; then
 				print_info "AIDEVOPS_HEADLESS_SANDBOX_DISABLED=1 — using bare timeout (no privilege isolation) (GH#20146 audit)"
 			fi
-			timeout "$HEADLESS_SANDBOX_TIMEOUT_DEFAULT" "${_oc_cmd[@]}" 2>&1 | tee "$output_file"
+			timeout "$HEADLESS_SANDBOX_TIMEOUT_DEFAULT" "${_oc_env_strip[@]}" "${_oc_cmd[@]}" 2>&1 | tee "$output_file"
 			printf '%s' "${PIPESTATUS[0]}" >"$exit_code_file"
 		fi
 	) &
